@@ -24,14 +24,14 @@
     "echarts": "^6.1.0",
     "element-plus": "catalog:",
     "nprogress": "^0.2.0",
-    "pinia": "^4.0.3",
+    "pinia": "^4.1.0",
     "pinia-plugin-persistedstate": "^4.7.1",
     "vue": "catalog:",
     "vue-i18n": "11.4.14",
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
-    "@intlify/unplugin-vue-i18n": "^11.2.5",
+    "@intlify/unplugin-vue-i18n": "^11.2.6",
     "@types/node": "^26.6.5",
     "@types/nprogress": "^0.2.3",
     "@unocss/transformer-variant-group": "^66.11.0",

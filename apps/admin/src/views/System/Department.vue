@@ -136,6 +136,7 @@
             }}</ElTag></template
           >
         </ElTableColumn>
+        <!-- @vue-generic {Department} -->
         <ElTableColumn label="操作" width="220" fixed="right">
           <template #default="{ row }">
             <ElButton link type="primary" @click="openCreate(row)">新增下级</ElButton>

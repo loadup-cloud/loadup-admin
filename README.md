@@ -37,7 +37,7 @@ Controller 的 JSON 接口统一使用 POST + JSON body；ID 请求使用 `{ "id
 
 ## 商户信息管理
 
-`/merchants/list` 提供资料新增/编辑/启停/分页，使用 `/api/merchants/**`。登记号、详细地址和联系方式由 WebMVC 脱敏；编辑不回写掩码，敏感字段留空默认保留，可显式选择清空。签约页从启用商户列表选择服务端 id，基本行业资料供合约事实判断。源码已提供，未做类型检查、构建或端到端验证。
+`/merchants/list` 提供资料新增/编辑/启停/分页，使用 `/api/merchants/**`。登记号、详细地址和联系方式由 WebMVC 脱敏；编辑不回写掩码，敏感字段留空默认保留，可显式选择清空。签约页从启用商户列表选择服务端 id，基本行业资料供合约事实判断。已通过类型检查与生产构建；尚未进行端到端业务验收。
 
 ## 本地文档
 
@@ -58,4 +58,12 @@ pnpm build:admin
 pnpm build:docs
 ```
 
-显式指定官方 registry，因为当前配置的 npm 镜像不提供 audit API。2026-10-16 的 npm 审计仍有一项 `braces@3.0.3` 高危告警（[GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)），来源为 stylelint / fast-glob 的 micromatch，尚无上游修复版本；未设置忽略规则或将其视为已修复。处理进展见根 ROADMAP。管理端整体类型检查仍受既有表格 DefaultRow 泛型错误阻塞，不能以打包成功代替类型检查通过。
+显式指定官方 registry，因为当前配置的 npm 镜像不提供 audit API。2026-10-16 的 npm 审计仍有一项 `braces@3.0.3` 高危告警（[GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm)），来源为 stylelint / fast-glob 的 micromatch，尚无上游修复版本；未设置忽略规则或将其视为已修复。处理进展见根 ROADMAP。管理端及公共包的类型检查已通过；表格列使用显式泛型传递业务行类型，类型检查和打包分别作为门禁。
+
+## GitHub CI
+
+本仓库独立运行 `.github/workflows/ci.yml`，在 main/develop/dev push、PR 和手动运行时执行，不依赖后端 Maven 或 Hugo 工作目录。Node 版本读取 `.node-version`，pnpm 版本读取 package.json 的 packageManager，缓存键使用根 pnpm-lock.yaml；始终冻结安装。
+
+安装成功后分别执行 lint、格式、样式、应用与公共包类型检查、request/hooks 单测和 admin 生产构建。各检查独立产生结果，任一失败都会阻止 CI 通过；构建成功时归档 apps/admin/dist-pro 等 dist 目录 7 天，不配置部署。
+
+建议将 **Admin Quality, Tests and Build** 设为本仓库的必需检查。Dependabot 在根目录管理 npm/pnpm 依赖和 GitHub Actions，后端仓库不再扫描本仓库的依赖。apps/docs 是管理端附带的 VitePress workspace，与兄弟仓库 docs 中的框架 Hugo 文档站独立；锁文件包含这两个前端应用的依赖。

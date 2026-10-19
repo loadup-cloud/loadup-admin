@@ -202,6 +202,7 @@
         <ElTableColumn label="启用" width="70"
           ><template #default="{ row }">{{ row.enabled ? '是' : '否' }}</template></ElTableColumn
         >
+        <!-- @vue-generic {DictionaryType} -->
         <ElTableColumn label="操作" width="110"
           ><template #default="{ row }"
             ><ElButton link type="primary" @click.stop="openType(row)">编辑</ElButton
@@ -237,7 +238,8 @@
           label="启用"
           width="70"
           ><template #default="{ row }">{{ row.enabled ? '是' : '否' }}</template></ElTableColumn
-        ><ElTableColumn label="操作" width="110"
+        ><!-- @vue-generic {DictionaryItem} -->
+        <ElTableColumn label="操作" width="110"
           ><template #default="{ row }"
             ><ElButton link type="primary" @click="openItem(row)">编辑</ElButton
             ><ElButton link type="danger" @click="removeItem(row)">删除</ElButton></template

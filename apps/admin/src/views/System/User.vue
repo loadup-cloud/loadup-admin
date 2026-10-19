@@ -201,6 +201,7 @@
             }}</ElTag></template
           >
         </ElTableColumn>
+        <!-- @vue-generic {User} -->
         <ElTableColumn label="操作" width="140" fixed="right">
           <template #default="{ row }">
             <ElButton link type="primary" @click="openEdit(row)">编辑</ElButton>

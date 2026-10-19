@@ -1,0 +1,75 @@
+name: Admin CI
+
+on:
+  push:
+    branches: [main, develop, dev]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CI: 'true'
+  HUSKY: '0'
+
+jobs:
+  verify:
+    name: Admin Quality, Tests and Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Set up pnpm from packageManager
+        uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          run_install: false
+      - name: Set up Node and pnpm cache
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install locked dependencies
+        id: install
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm lint
+      - name: Check formatting
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm format:check
+      - name: Check styles
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm style:check
+      - name: Check application and package types
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm typecheck
+      - name: Test request package
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm --filter @vea/request test
+      - name: Test hooks package
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm --filter @vea/hooks test
+      - name: Build admin
+        id: build
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm build:admin
+      - name: Upload built admin
+        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: admin-dist
+          path: apps/admin/dist*/
+          retention-days: 7
+          if-no-files-found: ignore

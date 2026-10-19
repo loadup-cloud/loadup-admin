@@ -261,7 +261,8 @@
           ><ElButton @click="addParameter">添加参数</ElButton></div
         >
         <ElTable :data="form.parameters" border
-          ><ElTableColumn label="键 / 类型" min-width="170"
+          ><!-- @vue-generic {ParameterDraft} -->
+          <ElTableColumn label="键 / 类型" min-width="170"
             ><template #default="{ row }"
               ><ElInput v-model="row.key" placeholder="fee.rate" class="mb-8px" /><ElSelect
                 :model-value="row.type"

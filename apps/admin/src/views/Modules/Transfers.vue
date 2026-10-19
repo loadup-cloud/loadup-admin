@@ -207,9 +207,12 @@
           label="错误信息"
           min-width="170"
           show-overflow-tooltip
-        /><ElTableColumn prop="createdAt" label="创建时间" min-width="170" /><ElTableColumn
-          label="操作"
-          width="130"
+        /><ElTableColumn
+          prop="createdAt"
+          label="创建时间"
+          min-width="170"
+        /><!-- @vue-generic {TransferTask} -->
+        <ElTableColumn label="操作" width="130"
           ><template #default="{ row }"
             ><ElButton
               v-if="row.status === 'FAILED' || row.status === 'QUEUED'"

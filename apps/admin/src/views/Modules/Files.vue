@@ -173,9 +173,12 @@
           prop="provider"
           label="存储"
           width="100"
-        /><ElTableColumn prop="createdAt" label="上传时间" min-width="170" /><ElTableColumn
-          label="操作"
-          width="190"
+        /><ElTableColumn
+          prop="createdAt"
+          label="上传时间"
+          min-width="170"
+        /><!-- @vue-generic {FileResource} -->
+        <ElTableColumn label="操作" width="190"
           ><template #default="{ row }"
             ><ElButton link type="primary" @click="download(row)">下载</ElButton
             ><ElButton link @click="showReferences(row)">引用</ElButton

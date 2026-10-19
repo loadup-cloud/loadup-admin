@@ -176,7 +176,8 @@
           prop="createdAt"
           label="时间"
           min-width="170"
-        /><ElTableColumn label="操作" width="220"
+        /><!-- @vue-generic {Notification} -->
+        <ElTableColumn label="操作" width="220"
           ><template #default="{ row }"
             ><ElButton
               v-if="row.actionUrl?.startsWith('/') && !row.actionUrl.startsWith('//')"

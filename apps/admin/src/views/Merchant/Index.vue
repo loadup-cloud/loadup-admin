@@ -177,9 +177,7 @@
           ><ElOption label="启用" value="ACTIVE" /><ElOption
             label="停用"
             value="INACTIVE" /></ElSelect
-        ><ElButton
-          @click="search"
-          >查询</ElButton
+        ><ElButton @click="search">查询</ElButton
         ><ElButton type="primary" @click="create">新增商户</ElButton></div
       >
       <p class="mb-12px text-sm opacity-70"
@@ -201,7 +199,8 @@
               scope.row.status === 'ACTIVE' ? '启用' : '停用'
             }}</ElTag></template
           ></ElTableColumn
-        ><ElTableColumn label="操作" width="180"
+        ><!-- @vue-generic {Merchant} -->
+        <ElTableColumn label="操作" width="180"
           ><template #default="scope"
             ><ElButton link type="primary" @click="edit(scope.row)">编辑</ElButton
             ><ElButton

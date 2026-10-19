@@ -30,8 +30,7 @@
     return value
   }
   const dirty = computed(
-    () =>
-      JSON.stringify(comparable(props.item)) !== JSON.stringify(comparable(stored.value))
+    () => JSON.stringify(comparable(props.item)) !== JSON.stringify(comparable(stored.value))
   )
   const change = async (action: 'publish' | 'retire') => {
     try {

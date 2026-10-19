@@ -27,7 +27,9 @@ export default ({ mode }: ConfigEnv): UserConfig => {
         compositionOnly: true,
         include: [resolve(import.meta.dirname, 'src/locales/**')]
       }),
-      env.VITE_USE_MOCK === 'true' ? mockDevServerPlugin({ prefix: '/mock', log: 'warn' }) : undefined,
+      env.VITE_USE_MOCK === 'true'
+        ? mockDevServerPlugin({ prefix: '/mock', log: 'warn' })
+        : undefined,
       UnoCSS()
     ],
 

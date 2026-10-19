@@ -302,7 +302,10 @@
           ><ElButton type="danger" link @click="removeBundle(index)">移除</ElButton></div
         >
         <h3 class="mt-22px text-16px">产品项与参数协商</h3>
-        <p v-if="items.length && !hasDefaultSelection" class="text-sm text-[var(--el-color-warning)]">
+        <p
+          v-if="items.length && !hasDefaultSelection"
+          class="text-sm text-[var(--el-color-warning)]"
+        >
           当前组合没有默认选中的产品，无法保存方案。请先在产品组合中发布包含默认选中产品的新版本。
         </p>
         <p class="text-sm opacity-70">
@@ -316,9 +319,9 @@
             ><strong>{{ entry.key }}</strong
             ><ElTag size="small"
               >{{ entry.product?.productCode }} v{{ entry.product?.version }}</ElTag
-            ><ElTag size="small" :type="entry.item.defaultSelected ? 'success' : 'info'"
-              >{{ entry.item.defaultSelected ? '默认选中' : '可选' }}</ElTag
-            ></div
+            ><ElTag size="small" :type="entry.item.defaultSelected ? 'success' : 'info'">{{
+              entry.item.defaultSelected ? '默认选中' : '可选'
+            }}</ElTag></div
           ><div
             v-for="parameter in entry.product?.parameters ?? []"
             :key="parameter.key"

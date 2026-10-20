@@ -35,7 +35,6 @@ jobs:
           node-version-file: .node-version
       - uses: pnpm/action-setup@v6
         with:
-          version: 12
           run_install: false
           cache: true
       - name: Install locked dependencies

@@ -19,7 +19,7 @@
     "typecheck": "vue-tsc --noEmit --skipLibCheck -p tsconfig.json"
   },
   "dependencies": {
-    "@iconify/vue": "^5.0.3"
+    "@iconify/vue": "^5.0.4"
   },
   "peerDependencies": {
     "element-plus": ">=2.8.0",

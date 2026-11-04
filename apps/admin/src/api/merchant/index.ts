@@ -34,7 +34,7 @@ export interface MerchantQuery {
   size: number
 }
 const post = <T>(path: string, data: object) =>
-  request.post<T>({ url: `/api/merchants/${path}`, data })
+  request.post<T>({ url: `/api/merchantmng/merchants/${path}`, data })
 export const createMerchant = (data: MerchantInfo) => post<Merchant>('create', data)
 export const updateMerchant = (data: MerchantInfo & { id: string; expectedRowVersion: number }) =>
   post<Merchant>('update', data)

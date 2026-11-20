@@ -13,6 +13,8 @@ npm run dev
 
 超级管理员也可以管理角色、部门和权限。角色页支持调整数据范围、直接权限和成员，部门与权限页以树形显示层级。所有已登录账号均可打开「账号安全」查看自己的登录记录和修改密码。
 
+「审计日志」使用 `POST /api/audit/events/query`，仅向超级管理员开放。操作人可以按账号或昵称查找，也可以直接指定 ID。操作类型按完整名称匹配，时间范围使用应用本地时间。详情展示接口返回的事件元数据，自动采集范围由后端的 `loadup.modules.audit.web.include-paths` 配置。
+
 > Production-ready SaaS admin template built with React 19, TypeScript 6, Vite 8, and Ant Design v6.
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://react-admin-dashboard-gamma-six.vercel.app/)

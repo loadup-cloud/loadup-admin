@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { App, Form, Input, Button, Card, Typography, Space, theme } from 'antd'
 import { UserOutlined, LockOutlined } from '@ant-design/icons'
-import { Navigate } from 'react-router-dom'
+import AccountHome from '../../../components/auth/AccountHome'
 import useUserStore from '../../../store/user'
 import { login as loginToUpms, type LoginCredentials } from '../../../utils/upms'
 
@@ -57,7 +57,7 @@ const LoginPage: React.FC = () => {
     }
   }
 
-  if (session) return <Navigate to="/users" replace />
+  if (session) return <AccountHome />
 
   return (
     <div style={backgroundStyle}>

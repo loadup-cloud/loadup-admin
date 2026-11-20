@@ -4,7 +4,7 @@ import type { MenuItemType } from 'antd/es/menu/interface';
 import { AdminRouterItem, routes } from '../../router';
 import { useLocation, useNavigate } from 'react-router-dom';
 import useUserStore from '../../store/user';
-import { canManageUsers } from '../../utils/upms';
+import { isSuperAdmin } from '../../utils/upms';
 
 const { Sider } = Layout;
 
@@ -65,7 +65,7 @@ type PageSidebarProps = {
 const PageSidebar = (props: PageSidebarProps) => {
   const { autoCollapse = true, height = '100%', collapsed: externalCollapsed, onCollapse } = props
   const session = useUserStore((state) => state.session)
-  const menuItems = getMenuItems(routes, canManageUsers(session))
+  const menuItems = getMenuItems(routes, isSuperAdmin(session))
   const navigate = useNavigate()
   const [lastOpenedMenu, setLastOpenedMenu] = useState<string[]>([])
   const location = useLocation()

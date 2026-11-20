@@ -11,6 +11,8 @@ npm run dev
 
 用户管理需要 UPMS 超级管理员角色，支持关键词筛选、服务端分页、锁定和解锁。当前用户列表接口未返回手动锁定标记，操作结果以 UPMS 响应为准。新增页面沿用模板的 `*.router.tsx` 模块注册方式，示例业务模块保留在源码中。
 
+超级管理员也可以管理角色、部门和权限。角色页支持调整数据范围、直接权限和成员，部门与权限页以树形显示层级。所有已登录账号均可打开「账号安全」查看自己的登录记录和修改密码。
+
 > Production-ready SaaS admin template built with React 19, TypeScript 6, Vite 8, and Ant Design v6.
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://react-admin-dashboard-gamma-six.vercel.app/)

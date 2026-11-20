@@ -1,11 +1,11 @@
 import {
-  Navigate,
   RouteObject,
   createBrowserRouter,
 } from "react-router-dom";
 import App from "../App";
 import { MenuItemType } from "antd/es/menu/interface";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
+import AccountHome from "../components/auth/AccountHome";
 
 
 export type AdminRouterItem = RouteObject & {
@@ -64,7 +64,7 @@ const wrapWithProtectedRoute = (route: AdminRouterItem): AdminRouterItem => {
 }
 
 routeModules.forEach(route => {
-  // Auth routes (login, register) don't require authentication
+  // Auth routes don't require authentication.
   if (route.path?.startsWith('auth/')) {
     authRoutes.push(route)
   } else {
@@ -76,10 +76,10 @@ routeModules.forEach(route => {
 export const routes: AdminRouterItem[] = [
   ...authRoutes,
   ...protectedRoutes,
-  { index: true, element: <Navigate to="/users" replace /> },
+  { index: true, element: <AccountHome /> },
   {
     path: '*',
-    element: <Navigate to="/users" replace />,
+    element: <AccountHome />,
   },
 ]
 

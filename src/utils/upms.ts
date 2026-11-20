@@ -121,7 +121,7 @@ export function saveSession(session: Session | null) {
   }
 }
 
-export function canManageUsers(session: Session | null) {
+export function isSuperAdmin(session: Session | null) {
   return session?.roles.some((role) => role === 'SUPER_ADMIN' || role === 'ROLE_SUPER_ADMIN') ?? false
 }
 
@@ -140,15 +140,22 @@ export async function listUsers(
   session: Session,
   options: { page: number; size: number; keyword?: string },
 ) {
-  const { data, pageInfo } = await post<UpmsUser[]>(
+  return toUpmsPage(await post<UpmsUser[]>(
     '/upms/user/list',
     { page: options.page, size: options.size, username: options.keyword?.trim() || undefined },
     session.accessToken,
-  )
+  ))
+}
+
+export function toUpmsPage<T>({ data, pageInfo }: Envelope<T[]>) {
   if (!Array.isArray(data) || !pageInfo || !Number.isFinite(pageInfo.totalCount)) {
-    throw new UpmsError('INVALID_RESPONSE', 'UPMS 返回的用户列表格式异常。')
+    throw new UpmsError('INVALID_RESPONSE', 'UPMS 返回的分页数据格式异常。')
   }
   return { data, total: pageInfo.totalCount, success: true }
+}
+
+export function requestUpms<T>(session: Session, path: string, body: object = {}) {
+  return post<T>(path, body, session.accessToken)
 }
 
 export async function changeAccountLock(session: Session, action: AccountAction, id: string) {

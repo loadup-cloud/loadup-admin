@@ -2,7 +2,7 @@ import React from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { Result } from 'antd'
 import useUserStore from '../../store/user'
-import { canManageUsers } from '../../utils/upms'
+import { isSuperAdmin } from '../../utils/upms'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -21,8 +21,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiresSuper
     // Redirect to login page with return url
     return <Navigate to="/auth/login" state={{ from: location }} replace />
   }
-  if (requiresSuperAdmin && !canManageUsers(session)) {
-    return <Result status="403" title="无访问权限" subTitle="用户管理仅对 UPMS 超级管理员开放。" />
+  if (requiresSuperAdmin && !isSuperAdmin(session)) {
+    return <Result status="403" title="无访问权限" subTitle="此页面仅对 UPMS 超级管理员开放。" />
   }
 
   return <>{children}</>

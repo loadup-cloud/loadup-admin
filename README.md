@@ -15,6 +15,8 @@ npm run dev
 
 「审计日志」使用 `POST /api/audit/events/query`，仅向超级管理员开放。操作人可以按账号或昵称查找，也可以直接指定 ID。操作类型按完整名称匹配，时间范围使用应用本地时间。详情展示接口返回的事件元数据，自动采集范围由后端的 `loadup.modules.audit.web.include-paths` 配置。
 
+「数据字典」使用 `/api/dictionaries` 管理接口，支持按关键词和状态筛选字典及其字典项，并维护记录及启停状态。字典编码和字典项的值在创建后固定。只有空字典可以删除。
+
 > Production-ready SaaS admin template built with React 19, TypeScript 6, Vite 8, and Ant Design v6.
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://react-admin-dashboard-gamma-six.vercel.app/)

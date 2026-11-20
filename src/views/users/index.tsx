@@ -1,11 +1,14 @@
-import { LockOutlined, UnlockOutlined } from '@ant-design/icons'
+import { LockOutlined, PlusOutlined, UnlockOutlined } from '@ant-design/icons'
 import { ProTable, type ActionType, type ProColumns } from '@ant-design/pro-components'
 import { Alert, App, Badge, Button, Modal, Result, Space, Tag, Typography } from 'antd'
 import { useCallback, useRef, useState } from 'react'
 import useUserStore from '../../store/user'
 import {
-  changeAccountLock, listUsers, UpmsError, type AccountAction, type Session, type UpmsUser,
+  changeAccountLock, listUsers, requestUpms, UpmsError, type AccountAction, type Session, type UpmsUser,
 } from '../../utils/upms'
+import type { Department, Role } from '../../utils/upmsModels'
+import { upmsErrorText, useUpms } from '../../utils/useUpms'
+import UserEditor, { type UserEditorData } from './UserEditor'
 
 const statusLabels = {
   0: { status: 'default', text: '停用' },
@@ -13,9 +16,15 @@ const statusLabels = {
   2: { status: 'error', text: '锁定' },
 } as const
 
-const actionLabels = { lock: '锁定', unlock: '解锁' }
+const actionLabels = { lock: '锁定', unlock: '解锁', delete: '删除' }
+const actionDescriptions = {
+  lock: '锁定后，此账号将无法再次登录。',
+  unlock: '解锁后，此账号可在满足其他登录条件时重新登录。',
+  delete: '删除后，此账号将无法再次登录，已分配的角色也会移除。',
+}
+type UserAction = AccountAction | 'delete'
 type Search = { keyword?: string }
-type PendingAction = { action: AccountAction; user: UpmsUser }
+type PendingAction = { action: UserAction; user: UpmsUser }
 
 function UserTable({ session, onSessionExpired }: {
   session: Session
@@ -23,11 +32,14 @@ function UserTable({ session, onSessionExpired }: {
 }) {
   const table = useRef<ActionType>(undefined)
   const { message } = App.useApp()
+  const request = useUpms()
   const [loadError, setLoadError] = useState('')
   const [forbidden, setForbidden] = useState(false)
   const [selection, setSelection] = useState<PendingAction>()
   const [submitting, setSubmitting] = useState(false)
   const [actionError, setActionError] = useState('')
+  const [editor, setEditor] = useState<UserEditorData>()
+  const [openingEditor, setOpeningEditor] = useState<{ id?: string }>()
 
   const loadPage = useCallback(async ({ current = 1, pageSize = 10, keyword }: Search & {
     current?: number
@@ -48,7 +60,29 @@ function UserTable({ session, onSessionExpired }: {
     }
   }, [session, onSessionExpired])
 
-  function chooseAction(action: AccountAction, user: UpmsUser) {
+  async function openEditor(id?: string) {
+    if (openingEditor) return
+    setOpeningEditor({ id })
+    try {
+      const [departments, roles, detail] = await Promise.all([
+        request<Department[]>('/upms/department/tree'),
+        request<Role[]>('/upms/role/tree'),
+        id ? request<NonNullable<UserEditorData['user']>>('/upms/user/detail', { id }) : undefined,
+      ])
+      if (!Array.isArray(departments.data) || !Array.isArray(roles.data) || (id && !detail?.data)) {
+        throw new Error('无法加载用户表单所需的数据。')
+      }
+      setEditor({ departments: departments.data, roles: roles.data, user: detail?.data ?? undefined })
+    } catch (error) {
+      if (!(error instanceof UpmsError && error.code === 'UNAUTHENTICATED')) {
+        void message.error(upmsErrorText(error))
+      }
+    } finally {
+      setOpeningEditor(undefined)
+    }
+  }
+
+  function chooseAction(action: UserAction, user: UpmsUser) {
     setActionError('')
     setSelection({ action, user })
   }
@@ -59,10 +93,18 @@ function UserTable({ session, onSessionExpired }: {
     setActionError('')
     const { action, user } = selection
     try {
-      await changeAccountLock(session, action, user.id)
+      if (action === 'delete') {
+        await requestUpms(session, '/upms/user/delete', { id: user.id })
+      } else {
+        await changeAccountLock(session, action, user.id)
+      }
       setSelection(undefined)
       void message.success(`已${actionLabels[action]} ${user.username}`)
-      void table.current?.reload()
+      if (action === 'delete' && user.id === session.userId) {
+        useUserStore.getState().logout()
+      } else {
+        void table.current?.reload(action === 'delete')
+      }
     } catch (error) {
       if (error instanceof UpmsError && error.code === 'UNAUTHENTICATED') {
         onSessionExpired()
@@ -141,11 +183,14 @@ function UserTable({ session, onSessionExpired }: {
     {
       title: '操作',
       search: false,
-      width: 174,
+      width: 230,
       render: (_, user) => (
-        <Space size={6}>
+        <Space size={4}>
+          <Button type="link" size="small" aria-label={`编辑 ${user.username}`} loading={openingEditor?.id === user.id}
+            disabled={Boolean(openingEditor) && openingEditor?.id !== user.id} onClick={() => void openEditor(user.id)}>编辑</Button>
           <Button type="link" size="small" aria-label={`锁定 ${user.username}`} icon={<LockOutlined />} onClick={() => chooseAction('lock', user)}>锁定</Button>
           <Button type="link" size="small" aria-label={`解锁 ${user.username}`} icon={<UnlockOutlined />} onClick={() => chooseAction('unlock', user)}>解锁</Button>
+          <Button type="link" size="small" danger aria-label={`删除 ${user.username}`} onClick={() => chooseAction('delete', user)}>删除</Button>
         </Space>
       ),
     },
@@ -176,14 +221,29 @@ function UserTable({ session, onSessionExpired }: {
           showTotal: (total) => `共 ${total} 条`,
           locale: { items_per_page: '条/页' },
         }}
-        scroll={{ x: 1092 }}
+        scroll={{ x: 1150 }}
+        toolBarRender={() => [
+          <Button key="create" type="primary" icon={<PlusOutlined />} aria-label="新增用户"
+            loading={Boolean(openingEditor) && !openingEditor?.id} disabled={Boolean(openingEditor?.id)}
+            onClick={() => void openEditor()}>新增用户</Button>,
+        ]}
         locale={{ emptyText: '没有符合条件的用户' }}
       />
+      {editor && (
+        <UserEditor
+          data={editor}
+          onClose={() => setEditor(undefined)}
+          onSaved={() => {
+            void message.success(editor.user ? '用户已更新' : '用户已新增')
+            void table.current?.reload(!editor.user)
+          }}
+        />
+      )}
       <Modal
         title={selection && `${actionLabels[selection.action]}账号`}
         open={Boolean(selection)}
         okText={selection && `确认${actionLabels[selection.action]}`}
-        okButtonProps={{ danger: selection?.action === 'lock' }}
+        okButtonProps={{ danger: selection?.action !== 'unlock' }}
         confirmLoading={submitting}
         cancelButtonProps={{ disabled: submitting }}
         closable={!submitting}
@@ -195,13 +255,13 @@ function UserTable({ session, onSessionExpired }: {
       >
         {selection && (
           <Typography.Paragraph>
-            {selection.action === 'lock' ? '锁定后，此账号将无法再次登录。' : '解锁后，此账号可在满足其他登录条件时重新登录。'}
+            {actionDescriptions[selection.action]}
             <br />
             账号 <Typography.Text strong>{selection.user.username}</Typography.Text>
           </Typography.Paragraph>
         )}
-        {selection?.action === 'lock' && selection.user.id === session.userId && (
-          <Alert type="warning" showIcon title="这是当前登录账号。" />
+        {selection && selection.action !== 'unlock' && selection.user.id === session.userId && (
+          <Alert type="warning" showIcon title={selection.action === 'delete' ? '删除当前账号后将立即退出登录。' : '这是当前登录账号。'} />
         )}
         {actionError && <Alert type="error" showIcon title={actionError} />}
       </Modal>

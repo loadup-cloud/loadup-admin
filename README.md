@@ -21,7 +21,7 @@ npm run dev
 
 「导入导出任务」使用 `/api/transfer-tasks`。导入时选取当前账号已上传的源文件，按任务类型和状态查询分页，成功后从文件资源下载结果。超级管理员可按所有者查询。LoadUp Boot 本地环境的示例处理器为 `demo-csv-import` 和 `demo-csv-export`。
 
-「通知管理」使用 `/api/notifications`，支持筛选当前账号的全部或未读通知、服务端分页、查看完整正文和单条标记已读。超级管理员可搜索并选择多个收件人发布通知，跳转地址可填写站内路径。
+「通知管理」使用 `/api/notifications`，支持筛选当前账号的全部或未读通知、服务端分页、查看完整正文、单条或全部标记已读，以及归档。列表和未读数会在操作后刷新，归档通知会从收件箱移除。超级管理员可搜索并选择多个收件人发布通知，跳转地址可填写站内路径。
 
 > Production-ready SaaS admin template built with React 19, TypeScript 6, Vite 8, and Ant Design v6.
 

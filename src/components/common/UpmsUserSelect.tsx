@@ -4,15 +4,19 @@ import { toUpmsPage, type UpmsUser } from '../../utils/upms'
 import { useUpms } from '../../utils/useUpms'
 
 type UserOption = { value: string; label: string }
+type SingleSelect = Pick<SelectProps<string, UserOption>, 'value' | 'onChange'> & { mode?: never }
+type MultipleSelect = Pick<SelectProps<string[], UserOption>, 'value' | 'onChange' | 'maxCount'> & { mode: 'multiple' }
 
-export default function UpmsUserSelect({ value, onChange, label, placeholder }: Pick<SelectProps<string>, 'value' | 'onChange'> & {
+export default function UpmsUserSelect(props: (SingleSelect | MultipleSelect) & {
+  id?: string
   label: string
   placeholder: string
 }) {
+  const { id, value, label, placeholder } = props
   const request = useUpms()
   const [search, setSearch] = useState('')
-  const [results, setResults] = useState<{ keyword: string; options: UserOption[] }>()
-  const [selected, setSelected] = useState<UserOption>()
+  const [results, setResults] = useState<{ keyword: string; options: UserOption[]; error?: string }>()
+  const [selected, setSelected] = useState<UserOption[]>([])
   const keyword = search.trim()
 
   useEffect(() => {
@@ -27,7 +31,7 @@ export default function UpmsUserSelect({ value, onChange, label, placeholder }: 
         }))
         if (current) setResults({ keyword, options })
       } catch {
-        if (current) setResults({ keyword, options: [] })
+        if (current) setResults({ keyword, options: [], error: '搜索用户失败，请重试。' })
       }
     }, 250)
     return () => {
@@ -36,28 +40,44 @@ export default function UpmsUserSelect({ value, onChange, label, placeholder }: 
     }
   }, [keyword, request])
 
-  const options = results?.keyword === keyword ? [...results.options] : []
-  if (selected && selected.value === value && !options.some((option) => option.value === value)) {
-    options.unshift(selected)
-  }
-  if (keyword && !options.some((option) => option.value === keyword)) {
+  const result = results?.keyword === keyword ? results : undefined
+  const matches = result?.options ?? []
+  const values = Array.isArray(value) ? value : value ? [value] : []
+  const options = [
+    ...matches,
+    ...selected.filter((item) => values.includes(item.value) && !matches.some((match) => match.value === item.value)),
+  ]
+  if (!props.mode && keyword && !options.some((option) => option.value === keyword)) {
     options.push({ value: keyword, label: `按 ID 查询：${keyword}` })
   }
 
+  function rememberSelection(ids: string[]) {
+    setSelected(options.filter((option) => ids.includes(option.value)))
+    setSearch('')
+  }
+
+  const selectProps = {
+    id, 'aria-label': label, placeholder, allowClear: true, options,
+    loading: Boolean(keyword) && !result,
+    notFoundContent: result?.error ?? (keyword ? '没有匹配的用户' : '输入账号或昵称搜索'),
+    showSearch: { searchValue: search, onSearch: setSearch, filterOption: false as const },
+  }
+
+  if (props.mode === 'multiple') {
+    return (
+      <Select<string[], UserOption> {...selectProps} mode="multiple" maxCount={props.maxCount} value={props.value}
+        onChange={(ids, options) => {
+          rememberSelection(ids)
+          props.onChange?.(ids, options)
+        }} />
+    )
+  }
+
   return (
-    <Select<string>
-      aria-label={label}
-      placeholder={placeholder}
-      value={value}
+    <Select<string, UserOption> {...selectProps} value={props.value}
       onChange={(userId, option) => {
-        setSelected(options.find((item) => item.value === userId))
-        setSearch('')
-        onChange?.(userId, option)
-      }}
-      allowClear
-      loading={Boolean(keyword) && results?.keyword !== keyword}
-      showSearch={{ searchValue: search, onSearch: setSearch, filterOption: false }}
-      options={options}
-    />
+        rememberSelection(userId ? [userId] : [])
+        props.onChange?.(userId, option)
+      }} />
   )
 }

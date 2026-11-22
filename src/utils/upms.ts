@@ -62,6 +62,8 @@ const errorMessages: Record<string, string> = {
   TRANSFER_TASK_HAS_NO_RESULT_FILE: '此任务暂无可下载的结果文件。',
   TRANSFER_SOURCE_FILE_EXCEEDS_IMPORT_LIMIT: '源文件超过导入大小限制，请选择较小的文件。',
   NOTIFICATION_NOTIFICATION_NOT_FOUND: '通知已不存在，请刷新列表。',
+  NOTIFICATION_RECIPIENTS_MUST_CONTAIN_1_TO_100_USERS: '请选择 1 至 100 位收件人。',
+  NOTIFICATION_INVALID_ACTION_URL: '跳转地址必须是以 / 开头的有效站内路径。',
   DEPLOYMENT_CODE_REQUIRED: 'UPMS 要求提供部署代码。',
   DEPLOYMENT_CODE_INVALID: '部署代码格式不正确。',
   DEPLOYMENT_CODE_MISMATCH: '部署代码与当前 UPMS 实例不匹配。',

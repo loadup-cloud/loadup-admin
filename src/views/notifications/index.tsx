@@ -1,9 +1,13 @@
 import { ProTable, type ActionType, type ProColumns } from '@ant-design/pro-components'
 import { Alert, App, Button, Descriptions, Drawer, Space, Tag, Typography } from 'antd'
 import { useCallback, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import useUserStore from '../../store/user'
 import { fileDate } from '../../utils/fileResources'
-import { toUpmsPage } from '../../utils/upms'
+import { isSuperAdmin, toUpmsPage } from '../../utils/upms'
 import { upmsErrorText, useUpms } from '../../utils/useUpms'
+import PublishNotificationDialog from './PublishNotificationDialog'
+import { isNotificationActionPath } from './notificationAction'
 
 type InboxNotification = {
   id: string
@@ -24,11 +28,13 @@ function readStatus(read: boolean) {
 
 export default function NotificationsPage() {
   const request = useUpms()
+  const canPublish = useUserStore((state) => isSuperAdmin(state.session))
   const { message } = App.useApp()
   const table = useRef<ActionType>(undefined)
   const [loadError, setLoadError] = useState('')
   const [markingId, setMarkingId] = useState<string>()
   const [detail, setDetail] = useState<{ item: InboxNotification; read: boolean }>()
+  const [publishing, setPublishing] = useState(false)
 
   const loadPage = useCallback(async ({ current = 1, pageSize = 20, status }: InboxFilters & {
     current?: number
@@ -96,7 +102,12 @@ export default function NotificationsPage() {
         options={{ density: false, setting: false }} scroll={{ x: 720 }} locale={{ emptyText: '没有符合条件的通知' }}
         pagination={{ defaultPageSize: 20, pageSizeOptions: [10, 20, 50, 100], showSizeChanger: true,
           showTotal: (total) => `共 ${total} 条`, locale: { items_per_page: '条/页' } }}
+        toolBarRender={canPublish ? () => [
+          <Button key="publish" type="primary" onClick={() => setPublishing(true)}>发布通知</Button>,
+        ] : undefined}
       />
+      {canPublish && publishing && <PublishNotificationDialog onClose={() => setPublishing(false)}
+        onPublished={() => void table.current?.reload(true)} />}
       <Drawer title="通知详情" size="large" open={Boolean(detail)} onClose={() => setDetail(undefined)}
         extra={detail && !detail.read && (
           <Button type="primary" loading={markingId === detail.item.id} disabled={Boolean(markingId) && markingId !== detail.item.id}
@@ -111,8 +122,11 @@ export default function NotificationsPage() {
               { key: 'sender', label: '发送人 ID', children: detail.item.senderId || '—' },
               { key: 'time', label: '接收时间', children: fileDate(detail.item.createdAt) },
               ...(detail.item.readAt ? [{ key: 'readAt', label: '已读时间', children: fileDate(detail.item.readAt) }] : []),
-              ...(detail.item.actionUrl ? [{ key: 'action', label: '相关地址', children: (
-                <Typography.Text copyable style={{ overflowWrap: 'anywhere' }}>{detail.item.actionUrl}</Typography.Text>
+              ...(detail.item.actionUrl ? [{ key: 'action', label: '跳转地址', children: (
+                <Typography.Text copyable={{ text: detail.item.actionUrl }} style={{ overflowWrap: 'anywhere' }}>
+                  {isNotificationActionPath(detail.item.actionUrl)
+                    ? <Link to={detail.item.actionUrl}>{detail.item.actionUrl}</Link> : detail.item.actionUrl}
+                </Typography.Text>
               ) }] : []),
             ]} />
             <Typography.Title level={5} style={{ marginTop: 24 }}>通知正文</Typography.Title>

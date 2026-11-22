@@ -3,8 +3,9 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { upmsErrorText } from '../../utils/useUpms'
 
-export default function UpmsFormDialog<T extends object>({ title, initialValues, onSave, onClose, children }: {
+export default function UpmsFormDialog<T extends object>({ title, okText = '保存', initialValues, onSave, onClose, children }: {
   title: string
+  okText?: string
   initialValues?: Partial<T>
   onSave: (values: T) => Promise<void>
   onClose: () => void
@@ -32,7 +33,7 @@ export default function UpmsFormDialog<T extends object>({ title, initialValues,
     <Modal
       open
       title={title}
-      okText="保存"
+      okText={okText}
       confirmLoading={pending}
       closable={!pending}
       keyboard={!pending}

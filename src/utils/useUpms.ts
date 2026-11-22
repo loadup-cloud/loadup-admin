@@ -1,15 +1,15 @@
 import { App } from 'antd'
 import { useCallback, useEffect, useState } from 'react'
 import useUserStore from '../store/user'
-import { requestUpms, UpmsError } from './upms'
+import { requestUpms, requestUpmsBlob, UpmsError, type Session } from './upms'
 
-export function useUpms() {
+function useAuthorizedCall() {
   const session = useUserStore((state) => state.session)
   const { message } = App.useApp()
-  return useCallback(async <T,>(path: string, body?: object) => {
+  return useCallback(async <T,>(operation: (session: Session) => Promise<T>) => {
     if (!session) throw new UpmsError('UNAUTHENTICATED', '请重新登录。')
     try {
-      return await requestUpms<T>(session, path, body)
+      return await operation(session)
     } catch (error) {
       const state = useUserStore.getState()
       if (error instanceof UpmsError && error.code === 'UNAUTHENTICATED' && state.session === session) {
@@ -19,6 +19,16 @@ export function useUpms() {
       throw error
     }
   }, [message, session])
+}
+
+export function useUpms() {
+  const call = useAuthorizedCall()
+  return useCallback(<T,>(path: string, body?: object) => call((session) => requestUpms<T>(session, path, body)), [call])
+}
+
+export function useUpmsBlob() {
+  const call = useAuthorizedCall()
+  return useCallback((path: string) => call((session) => requestUpmsBlob(session, path)), [call])
 }
 
 export function useUpmsData<T>(path: string) {

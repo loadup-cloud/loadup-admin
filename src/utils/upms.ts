@@ -54,29 +54,29 @@ const errorMessages: Record<string, string> = {
   DICTIONARY_DICTIONARY_TYPE_NOT_FOUND: '字典已不存在，请刷新列表。',
   DICTIONARY_DICTIONARY_ITEM_NOT_FOUND: '字典项已不存在，请刷新列表。',
   DICTIONARY_INVALID_DICTIONARY_CODE: '字典编码格式不正确。',
+  FILE_FILE_NOT_FOUND: '文件已不存在，请刷新列表。',
+  FILE_FILENAME_CONTAINS_INVALID_CHARACTERS: '文件名含有非法字符。',
+  FILE_FILE_IS_REFERENCED_BY_A_BUSINESS_OBJECT: '此文件仍有业务引用，暂无法删除。',
   DEPLOYMENT_CODE_REQUIRED: 'UPMS 要求提供部署代码。',
   DEPLOYMENT_CODE_INVALID: '部署代码格式不正确。',
   DEPLOYMENT_CODE_MISMATCH: '部署代码与当前 UPMS 实例不匹配。',
 }
 
-async function post<T>(path: string, body: unknown, accessToken?: string): Promise<Envelope<T>> {
-  const headers = new Headers({
-    'Content-Type': 'application/json',
-    'X-Tenant-Code': import.meta.env.VITE_LOADUP_TENANT_CODE || 'local',
-  })
+type FetchOptions = NonNullable<Parameters<typeof fetch>[1]>
+
+async function fetchApi(path: string, init: FetchOptions, accessToken?: string) {
+  const headers = new Headers(init.headers)
+  headers.set('X-Tenant-Code', import.meta.env.VITE_LOADUP_TENANT_CODE || 'local')
   if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`)
 
-  let response: Response
   try {
-    response = await fetch(`/api${path}`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-      cache: 'no-store',
-    })
+    return await fetch(`/api${path}`, { ...init, headers, cache: 'no-store' })
   } catch {
     throw new UpmsError('NETWORK_ERROR', '无法连接 UPMS，请确认服务已启动。')
   }
+}
+
+async function readJson<T>(response: Response): Promise<Envelope<T>> {
   const payload: Envelope<T> | null = await response.json().catch(() => null)
   if (!response.ok || payload?.result?.status !== 'S') {
     const code = response.status === 401 ? 'UNAUTHENTICATED'
@@ -88,6 +88,13 @@ async function post<T>(path: string, body: unknown, accessToken?: string): Promi
     )
   }
   return payload
+}
+
+async function post<T>(path: string, body: unknown, accessToken?: string) {
+  const init: FetchOptions = body instanceof FormData
+    ? { method: 'POST', body }
+    : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+  return readJson<T>(await fetchApi(path, init, accessToken))
 }
 
 const sessionKey = 'loadup-admin.access-token'
@@ -168,6 +175,16 @@ export function toUpmsPage<T>({ data, pageInfo }: Envelope<T[]>) {
 
 export function requestUpms<T>(session: Session, path: string, body: object = {}) {
   return post<T>(path, body, session.accessToken)
+}
+
+export async function requestUpmsBlob(session: Session, path: string) {
+  const response = await fetchApi(path, { method: 'GET' }, session.accessToken)
+  const contentType = response.headers.get('Content-Type')?.split(';')[0]
+  if (!response.ok || contentType !== 'application/octet-stream') {
+    await readJson(response)
+    throw new UpmsError('INVALID_RESPONSE', '后端未返回可下载的文件。')
+  }
+  return response.blob()
 }
 
 export async function changeAccountLock(session: Session, action: AccountAction, id: string) {

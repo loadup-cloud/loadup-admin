@@ -1,7 +1,7 @@
 import { ProTable, type ActionType, type ProColumns } from '@ant-design/pro-components'
 import { Alert, Button, Descriptions, Drawer, Tag, Typography, type DatePicker } from 'antd'
 import { useCallback, useRef, useState, type ComponentProps } from 'react'
-import ActorFilter from './ActorFilter'
+import UpmsUserSelect from '../../components/common/UpmsUserSelect'
 import { toUpmsPage } from '../../utils/upms'
 import { upmsErrorText, useUpms } from '../../utils/useUpms'
 
@@ -62,7 +62,7 @@ export default function AuditPage() {
       title: '操作人',
       dataIndex: 'actorId',
       hideInTable: true,
-      formItemRender: () => <ActorFilter />,
+      formItemRender: () => <UpmsUserSelect label="操作人" placeholder="搜索账号、昵称或输入操作人 ID" />,
     },
     {
       title: '操作类型',

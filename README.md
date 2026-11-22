@@ -17,6 +17,8 @@ npm run dev
 
 「数据字典」使用 `/api/dictionaries` 管理接口，支持按关键词和状态筛选字典及其字典项，并维护记录及启停状态。字典编码和字典项的值在创建后固定。只有空字典可以删除。
 
+「文件资源」使用 `/api/files`，支持上传、下载、查看详情和业务引用，以及删除无引用文件。普通账号管理自己的文件，超级管理员可按所有者查询。
+
 > Production-ready SaaS admin template built with React 19, TypeScript 6, Vite 8, and Ant Design v6.
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://react-admin-dashboard-gamma-six.vercel.app/)

@@ -3,13 +3,16 @@ import { useEffect, useState } from 'react'
 import { toUpmsPage, type UpmsUser } from '../../utils/upms'
 import { useUpms } from '../../utils/useUpms'
 
-type ActorOption = { value: string; label: string }
+type UserOption = { value: string; label: string }
 
-export default function ActorFilter({ value, onChange }: Pick<SelectProps<string>, 'value' | 'onChange'>) {
+export default function UpmsUserSelect({ value, onChange, label, placeholder }: Pick<SelectProps<string>, 'value' | 'onChange'> & {
+  label: string
+  placeholder: string
+}) {
   const request = useUpms()
   const [search, setSearch] = useState('')
-  const [results, setResults] = useState<{ keyword: string; options: ActorOption[] }>()
-  const [selected, setSelected] = useState<ActorOption>()
+  const [results, setResults] = useState<{ keyword: string; options: UserOption[] }>()
+  const [selected, setSelected] = useState<UserOption>()
   const keyword = search.trim()
 
   useEffect(() => {
@@ -43,13 +46,13 @@ export default function ActorFilter({ value, onChange }: Pick<SelectProps<string
 
   return (
     <Select<string>
-      aria-label="操作人"
-      placeholder="搜索账号、昵称或输入操作人 ID"
+      aria-label={label}
+      placeholder={placeholder}
       value={value}
-      onChange={(actorId, option) => {
-        setSelected(options.find((item) => item.value === actorId))
+      onChange={(userId, option) => {
+        setSelected(options.find((item) => item.value === userId))
         setSearch('')
-        onChange?.(actorId, option)
+        onChange?.(userId, option)
       }}
       allowClear
       loading={Boolean(keyword) && results?.keyword !== keyword}

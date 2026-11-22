@@ -61,6 +61,7 @@ const errorMessages: Record<string, string> = {
   TRANSFER_UNKNOWN_TRANSFER_HANDLER: '当前服务未注册此类型的处理器，请核对处理器标识。',
   TRANSFER_TASK_HAS_NO_RESULT_FILE: '此任务暂无可下载的结果文件。',
   TRANSFER_SOURCE_FILE_EXCEEDS_IMPORT_LIMIT: '源文件超过导入大小限制，请选择较小的文件。',
+  NOTIFICATION_NOTIFICATION_NOT_FOUND: '通知已不存在，请刷新列表。',
   DEPLOYMENT_CODE_REQUIRED: 'UPMS 要求提供部署代码。',
   DEPLOYMENT_CODE_INVALID: '部署代码格式不正确。',
   DEPLOYMENT_CODE_MISMATCH: '部署代码与当前 UPMS 实例不匹配。',

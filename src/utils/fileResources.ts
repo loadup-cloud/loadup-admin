@@ -24,6 +24,6 @@ export function fileSize(bytes: number) {
   return `${sizeFormatter.format(bytes / 1024 ** unit)} ${units[unit]}`
 }
 
-export function fileDate(value?: string) {
+export function fileDate(value?: string | null) {
   return value?.replace('T', ' ').slice(0, 19) || '—'
 }

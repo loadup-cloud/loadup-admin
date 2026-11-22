@@ -5,17 +5,18 @@ import { useCallback, useRef, useState } from 'react'
 import UpmsFormDialog from '../../components/common/UpmsFormDialog'
 import UpmsUserSelect from '../../components/common/UpmsUserSelect'
 import useUserStore from '../../store/user'
+import { fileDate, fileSize, type FileResource } from '../../utils/fileResources'
 import { isSuperAdmin, toUpmsPage } from '../../utils/upms'
-import { upmsErrorText, useUpms, useUpmsBlob } from '../../utils/useUpms'
+import useFileDownload from '../../utils/useFileDownload'
+import { upmsErrorText, useUpms } from '../../utils/useUpms'
 import FileDetails from './FileDetails'
-import { fileDate, fileSize, type FileResource } from './fileModels'
 
 type FileFilters = { ownerId?: string }
 type FileUpload = { files: UploadFile[] }
 
 export default function FilesPage() {
   const request = useUpms()
-  const downloadBlob = useUpmsBlob()
+  const downloadFile = useFileDownload()
   const admin = useUserStore((state) => isSuperAdmin(state.session))
   const { message } = App.useApp()
   const table = useRef<ActionType>(undefined)
@@ -54,15 +55,7 @@ export default function FilesPage() {
     if (downloadingId) return
     setDownloadingId(file.id)
     try {
-      const blob = await downloadBlob(`/files/${encodeURIComponent(file.id)}/content`)
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = file.filename
-      document.body.append(link)
-      link.click()
-      link.remove()
-      window.setTimeout(() => URL.revokeObjectURL(url), 0)
+      await downloadFile(file.id, file.filename)
     } catch (failure) {
       void message.error(upmsErrorText(failure))
     } finally {

@@ -19,6 +19,8 @@ npm run dev
 
 「文件资源」使用 `/api/files`，支持上传、下载、查看详情和业务引用，以及删除无引用文件。普通账号管理自己的文件，超级管理员可按所有者查询。
 
+「导入导出任务」使用 `/api/transfer-tasks`。导入时选取当前账号已上传的源文件，按任务类型和状态查询分页，成功后从文件资源下载结果。超级管理员可按所有者查询。LoadUp Boot 本地环境的示例处理器为 `demo-csv-import` 和 `demo-csv-export`。
+
 > Production-ready SaaS admin template built with React 19, TypeScript 6, Vite 8, and Ant Design v6.
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://react-admin-dashboard-gamma-six.vercel.app/)

@@ -1,7 +1,7 @@
 import { Alert, Button, Descriptions, Skeleton, Table, Typography, type TableColumnsType } from 'antd'
 import { useEffect, useState } from 'react'
 import { upmsErrorText, useUpms } from '../../utils/useUpms'
-import { fileDate, fileSize, type FileReference, type FileResource } from './fileModels'
+import { fileDate, fileSize, type FileReference, type FileResource } from '../../utils/fileResources'
 
 const referenceColumns: TableColumnsType<FileReference> = [
   { title: '业务类型', dataIndex: 'referenceType' },

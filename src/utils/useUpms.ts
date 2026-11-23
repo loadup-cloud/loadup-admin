@@ -31,7 +31,7 @@ export function useUpmsBlob() {
   return useCallback((path: string) => call((session) => requestUpmsBlob(session, path)), [call])
 }
 
-export function useUpmsData<T>(path: string) {
+export function useUpmsData<T>(path: string, body?: object) {
   const request = useUpms()
   const [revision, setRevision] = useState(0)
   const [data, setData] = useState<T | null>(null)
@@ -41,7 +41,7 @@ export function useUpmsData<T>(path: string) {
     let current = true
     setLoading(true)
     setError('')
-    void request<T>(path).then((response) => {
+    void request<T>(path, body).then((response) => {
       if (current) setData(response.data)
     }).catch((failure: unknown) => {
       if (current) setError(upmsErrorText(failure))
@@ -49,7 +49,7 @@ export function useUpmsData<T>(path: string) {
       if (current) setLoading(false)
     })
     return () => { current = false }
-  }, [path, request, revision])
+  }, [body, path, request, revision])
   return { data, error, loading, reload: () => setRevision((value) => value + 1) }
 }
 

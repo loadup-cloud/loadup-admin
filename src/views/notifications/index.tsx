@@ -1,24 +1,14 @@
 import { ProTable, type ActionType, type ProColumns } from '@ant-design/pro-components'
-import { Alert, App, Button, Descriptions, Drawer, Popconfirm, Space, Tag, Typography } from 'antd'
+import { Alert, App, Button, Popconfirm, Space, Tag, Typography } from 'antd'
 import { useCallback, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import NotificationDetails from '../../components/notifications/NotificationDetails'
+import { useNotificationUnread } from '../../components/notifications/notificationUnreadContext'
 import useUserStore from '../../store/user'
 import { fileDate } from '../../utils/fileResources'
+import type { InboxNotification } from '../../utils/notifications'
 import { isSuperAdmin, toUpmsPage } from '../../utils/upms'
-import { upmsErrorText, useUpms, useUpmsData } from '../../utils/useUpms'
+import { upmsErrorText, useUpms } from '../../utils/useUpms'
 import PublishNotificationDialog from './PublishNotificationDialog'
-import { isNotificationActionPath } from './notificationAction'
-
-type InboxNotification = {
-  id: string
-  senderId?: string | null
-  category: string
-  title: string
-  body: string
-  actionUrl?: string | null
-  readAt?: string | null
-  createdAt: string
-}
 
 type InboxFilters = { status?: 'all' | 'unread' }
 type InboxAction = { kind: 'read' | 'archive'; id: string } | { kind: 'read-all'; id?: never }
@@ -32,7 +22,7 @@ export default function NotificationsPage() {
   const canPublish = useUserStore((state) => isSuperAdmin(state.session))
   const { message } = App.useApp()
   const table = useRef<ActionType>(undefined)
-  const unread = useUpmsData<{ count: number }>('/notifications/unread-count')
+  const unread = useNotificationUnread()
   const [loadError, setLoadError] = useState('')
   const [pending, setPending] = useState<InboxAction>()
   const [detail, setDetail] = useState<{ item: InboxNotification; read: boolean }>()
@@ -159,34 +149,13 @@ export default function NotificationsPage() {
       />
       {canPublish && publishing && <PublishNotificationDialog onClose={() => setPublishing(false)}
         onPublished={() => reloadInbox(true)} />}
-      <Drawer title="通知详情" size="large" open={Boolean(detail)} onClose={() => setDetail(undefined)}
+      <NotificationDetails item={detail?.item} read={detail?.read} onClose={() => setDetail(undefined)}
         extra={detail && (
           <Space>
             {renderArchive(detail.item.id)}
             {!detail.read && renderRead(detail.item.id)}
           </Space>
-        )}>
-        {detail && (
-          <>
-            <Typography.Title level={4} style={{ overflowWrap: 'anywhere' }}>{detail.item.title}</Typography.Title>
-            <Descriptions bordered size="small" column={1} items={[
-              { key: 'category', label: '类别', children: detail.item.category },
-              { key: 'status', label: '状态', children: readStatus(detail.read) },
-              { key: 'sender', label: '发送人 ID', children: detail.item.senderId || '—' },
-              { key: 'time', label: '接收时间', children: fileDate(detail.item.createdAt) },
-              ...(detail.item.readAt ? [{ key: 'readAt', label: '已读时间', children: fileDate(detail.item.readAt) }] : []),
-              ...(detail.item.actionUrl ? [{ key: 'action', label: '跳转地址', children: (
-                <Typography.Text copyable={{ text: detail.item.actionUrl }} style={{ overflowWrap: 'anywhere' }}>
-                  {isNotificationActionPath(detail.item.actionUrl)
-                    ? <Link to={detail.item.actionUrl}>{detail.item.actionUrl}</Link> : detail.item.actionUrl}
-                </Typography.Text>
-              ) }] : []),
-            ]} />
-            <Typography.Title level={5} style={{ marginTop: 24 }}>通知正文</Typography.Title>
-            <Typography.Paragraph style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{detail.item.body}</Typography.Paragraph>
-          </>
-        )}
-      </Drawer>
+        )} />
     </section>
   )
 }

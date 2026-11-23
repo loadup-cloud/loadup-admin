@@ -2,8 +2,8 @@ import { App, Form, Input } from 'antd'
 import { useRef } from 'react'
 import UpmsFormDialog from '../../components/common/UpmsFormDialog'
 import UpmsUserSelect from '../../components/common/UpmsUserSelect'
+import { isNotificationActionPath } from '../../utils/notifications'
 import { useUpms } from '../../utils/useUpms'
-import { isNotificationActionPath } from './notificationAction'
 
 type PublishFields = { recipients: string[]; category: string; title: string; body: string; actionUrl?: string }
 

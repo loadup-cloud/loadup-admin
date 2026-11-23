@@ -23,6 +23,8 @@ npm run dev
 
 「通知管理」使用 `/api/notifications`，支持筛选当前账号的全部或未读通知、服务端分页、查看完整正文、单条或全部标记已读，以及归档。列表和未读数会在操作后刷新，归档通知会从收件箱移除。超级管理员可搜索并选择多个收件人发布通知，跳转地址可填写站内路径。
 
+顶部通知铃铛显示当前账号的未读数，展开可查看最近 5 条未读通知的详情，也可进入通知管理。已读和归档操作会同步更新角标。
+
 > Production-ready SaaS admin template built with React 19, TypeScript 6, Vite 8, and Ant Design v6.
 
 [![Live Demo](https://img.shields.io/badge/demo-live-brightgreen)](https://react-admin-dashboard-gamma-six.vercel.app/)

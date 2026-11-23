@@ -6,6 +6,7 @@ import useUserStore from '../../store/user';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import ThemeConfigDialog from './ThemeConfigDialog';
+import NotificationBell from './NotificationBell';
 const { Header } = Layout;
 
 // Custom hook for responsive breakpoints
@@ -137,6 +138,7 @@ const Headerbar = (props: HeaderbarProps) => {
               </Tooltip>
             </>
           )}
+          {user && <NotificationBell />}
           {user && (
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <div style={{ 

@@ -6,23 +6,22 @@ import UpmsUserSelect from '../../components/common/UpmsUserSelect'
 import useUserStore from '../../store/user'
 import { fileDate } from '../../utils/fileResources'
 import { isSuperAdmin, toUpmsPage } from '../../utils/upms'
-import useFileDownload from '../../utils/useFileDownload'
 import { upmsErrorText, useUpms } from '../../utils/useUpms'
 import TransferTaskDetails from './TransferTaskDetails'
 import TransferTaskDialog from './TransferTaskDialog'
 import { taskKinds, taskStatuses, type TransferKind, type TransferStatus, type TransferTask } from './transferModels'
+import useTransferResultDownload from './useTransferResultDownload'
 
 type TaskFilters = { ownerId?: string; kind?: TransferKind; status?: TransferStatus }
 
 export default function TransferPage() {
   const request = useUpms()
-  const downloadFile = useFileDownload()
+  const { downloadResult, downloadingId } = useTransferResultDownload()
   const admin = useUserStore((state) => isSuperAdmin(state.session))
   const { message } = App.useApp()
   const table = useRef<ActionType>(undefined)
   const [submitting, setSubmitting] = useState<TransferKind>()
   const [details, setDetails] = useState<TransferTask>()
-  const [downloadingId, setDownloadingId] = useState<string>()
   const [loadError, setLoadError] = useState('')
 
   const loadPage = useCallback(async ({ current = 1, pageSize = 20, ownerId, kind, status }: TaskFilters & {
@@ -48,20 +47,6 @@ export default function TransferPage() {
     void message.success('任务已提交')
   }
 
-  async function downloadResult(task: TransferTask) {
-    if (downloadingId) return
-    setDownloadingId(task.id)
-    try {
-      const { data } = await request<{ fileId: string }>('/transfer-tasks/result', { id: task.id })
-      if (!data?.fileId) throw new Error('未能获取结果文件。')
-      await downloadFile(data.fileId)
-    } catch (failure) {
-      void message.error(upmsErrorText(failure))
-    } finally {
-      setDownloadingId(undefined)
-    }
-  }
-
   const columns: ProColumns<TransferTask>[] = [
     { title: '任务类型', dataIndex: 'kind', valueType: 'select', valueEnum: taskKinds, width: 92 },
     { title: '任务状态', dataIndex: 'status', valueType: 'select', valueEnum: taskStatuses, width: 106 },
@@ -80,7 +65,7 @@ export default function TransferPage() {
           <Button type="link" size="small" onClick={() => setDetails(row)}>详情</Button>
           {row.status === 'SUCCEEDED' && row.resultFileId && (
             <Button type="link" size="small" loading={downloadingId === row.id}
-              disabled={Boolean(downloadingId) && downloadingId !== row.id} onClick={() => void downloadResult(row)}>下载结果</Button>
+              disabled={Boolean(downloadingId) && downloadingId !== row.id} onClick={() => void downloadResult(row.id)}>下载结果</Button>
           )}
         </Space>
       ),
@@ -105,7 +90,7 @@ export default function TransferPage() {
       {submitting && <TransferTaskDialog kind={submitting} onClose={() => setSubmitting(undefined)} onSubmitted={taskSubmitted} />}
       <Drawer title="任务详情" size="large" open={Boolean(details)} onClose={() => setDetails(undefined)}>
         {details && <TransferTaskDetails key={details.id} initialTask={details} onUpdated={reloadTasks}
-          downloading={downloadingId === details.id} onDownload={(task) => void downloadResult(task)} />}
+          downloading={downloadingId === details.id} onDownload={(task) => void downloadResult(task.id)} />}
       </Drawer>
     </section>
   )

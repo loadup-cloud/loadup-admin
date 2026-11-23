@@ -7,7 +7,9 @@ npm ci
 npm run dev
 ```
 
-打开 http://127.0.0.1:5173/users，用现有的 UPMS 账号登录。开发服务器把 `/api` 转发到 `127.0.0.1:8080`，请求默认携带 `X-Tenant-Code: local`。可在 `.env.local` 配置 `LOADUP_API_TARGET` 和 `VITE_LOADUP_TENANT_CODE`。
+打开 http://127.0.0.1:5173/，用现有的 UPMS 账号登录。开发服务器把 `/api` 转发到 `127.0.0.1:8080`，请求默认携带 `X-Tenant-Code: local`。可在 `.env.local` 配置 `LOADUP_API_TARGET` 和 `VITE_LOADUP_TENANT_CODE`。
+
+登录后进入「工作台」(`/workbench`)。这里显示本人最近五条通知、未读数和最近五条导入导出任务。支持查看通知正文、标记已读、打开站内链接，以及下载已成功任务的结果文件。
 
 用户管理需要 UPMS 超级管理员角色，支持关键词筛选、服务端分页、新增、编辑、删除、选择部门和分配角色，以及锁定和解锁。编辑时姓名、邮箱和手机号留空会保留原值。当前用户列表接口未返回手动锁定标记，操作结果以 UPMS 响应为准。新增页面沿用模板的 `*.router.tsx` 模块注册方式，示例业务模块保留在源码中。
 

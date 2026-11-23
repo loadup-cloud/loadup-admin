@@ -9,6 +9,7 @@ export type Session = {
   userId: string
   username: string
   roles: string[]
+  permissions?: string[]
   expiresAt: number
 }
 
@@ -32,6 +33,7 @@ export class UpmsError extends Error {
   constructor(
     readonly code: string,
     message: string,
+    readonly details?: unknown,
   ) {
     super(message)
   }
@@ -92,6 +94,7 @@ async function readJson<T>(response: Response): Promise<Envelope<T>> {
     throw new UpmsError(
       code,
       errorMessages[code] || payload?.result?.message || `UPMS 返回异常响应（HTTP ${response.status}）。`,
+      payload?.data,
     )
   }
   return payload
@@ -110,7 +113,7 @@ function parseSession(accessToken: string): Session {
   try {
     const encoded = accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
     const bytes = Uint8Array.from(atob(encoded), (character) => character.charCodeAt(0))
-    const { exp, sub, username, roles } = JSON.parse(new TextDecoder().decode(bytes))
+    const { exp, sub, username, roles, permissions } = JSON.parse(new TextDecoder().decode(bytes))
     if (
       !Number.isFinite(exp) ||
       typeof sub !== 'string' ||
@@ -120,7 +123,10 @@ function parseSession(accessToken: string): Session {
     ) {
       throw new Error('Invalid UPMS token claims')
     }
-    return { accessToken, expiresAt: exp * 1000, userId: sub, username, roles }
+    return {
+      accessToken, expiresAt: exp * 1000, userId: sub, username, roles,
+      permissions: Array.isArray(permissions) ? permissions.filter((value): value is string => typeof value === 'string') : [],
+    }
   } catch {
     throw new UpmsError('INVALID_TOKEN', 'UPMS 返回的登录令牌无法读取。')
   }
@@ -180,8 +186,14 @@ export function toUpmsPage<T>({ data, pageInfo }: Envelope<T[]>) {
   return { data, total: pageInfo.totalCount, success: true }
 }
 
-export function requestUpms<T>(session: Session, path: string, body: object = {}) {
-  return post<T>(path, body, session.accessToken)
+export async function requestUpms<T>(
+  session: Session, path: string, body: object = {}, method: 'GET' | 'POST' | 'PUT' = 'POST',
+) {
+  if (method === 'POST') return post<T>(path, body, session.accessToken)
+  const init: FetchOptions = method === 'GET'
+    ? { method }
+    : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+  return readJson<T>(await fetchApi(path, init, session.accessToken))
 }
 
 export async function requestUpmsBlob(session: Session, path: string) {

@@ -19,6 +19,12 @@ npm run dev
 
 「数据字典」使用 `/api/dictionaries` 管理接口，支持按关键词和状态筛选字典及其字典项，并维护记录及启停状态。字典编码和字典项的值在创建后固定。只有空字典可以删除。
 
+「设备领用申请」位于 `/forms/device-request`，使用 `/api/forms/ASSET/instances`。LoadUp Boot 的 local profile 提供已发布的示例，拥有 `form:asset:fill` 的账号可直接点「创建申请」。也可指定发布 ID 或通过 `?releaseId=<发布 ID>` 打开填写入口。保存草稿后可通过申请编号或实例链接重新打开。提交后回显服务端冻结的结果。
+
+其他业务可复用 `src/components/forms/FormInstanceEditor.tsx`，传入命名空间和后端实例详情。字段身份、控件、选项和锁定规则来自该实例绑定的发布定义。草稿请求按条目和字段 Key 发送用户填写值。
+
+「表单设计」位于 `/forms/design`。设计权限可查看字段目录、编辑字段组和模板草稿、预览模板。发布权限还可以新增字段版本、发布字段组和模板，以及退役模板。本地设备领用示例使用 `form:asset:design` 和 `form:asset:publish`。在字段组设置控件、分区和顺序，在模板引用已发布的字段组版本。模板发布后可从预览复制发布 ID。
+
 「文件资源」使用 `/api/files`，支持上传、下载、查看详情和业务引用，以及删除无引用文件。普通账号管理自己的文件，超级管理员可按所有者查询。
 
 「导入导出任务」使用 `/api/transfer-tasks`。导入时选取当前账号已上传的源文件，按任务类型和状态查询分页，成功后从文件资源下载结果。超级管理员可按所有者查询。LoadUp Boot 本地环境的示例处理器为 `demo-csv-import` 和 `demo-csv-export`。

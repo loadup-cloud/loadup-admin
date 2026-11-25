@@ -8,6 +8,7 @@ import { fileDate } from '../../utils/fileResources'
 import type { InboxNotification } from '../../utils/notifications'
 import { isSuperAdmin, toUpmsPage } from '../../utils/upms'
 import { upmsErrorText, useUpms } from '../../utils/useUpms'
+import NotificationRoutesDialog from './NotificationRoutesDialog'
 import PublishNotificationDialog from './PublishNotificationDialog'
 
 type InboxFilters = { status?: 'all' | 'unread' }
@@ -27,6 +28,7 @@ export default function NotificationsPage() {
   const [pending, setPending] = useState<InboxAction>()
   const [detail, setDetail] = useState<{ item: InboxNotification; read: boolean }>()
   const [publishing, setPublishing] = useState(false)
+  const [configuringRoutes, setConfiguringRoutes] = useState(false)
 
   const loadPage = useCallback(async ({ current = 1, pageSize = 20, status }: InboxFilters & {
     current?: number
@@ -144,9 +146,11 @@ export default function NotificationsPage() {
               全部标记已读
             </Button>
           </Popconfirm>,
+          canPublish && <Button key="routes" onClick={() => setConfiguringRoutes(true)}>渠道配置</Button>,
           canPublish && <Button key="publish" type="primary" onClick={() => setPublishing(true)}>发布通知</Button>,
         ]}
       />
+      {canPublish && configuringRoutes && <NotificationRoutesDialog onClose={() => setConfiguringRoutes(false)} />}
       {canPublish && publishing && <PublishNotificationDialog onClose={() => setPublishing(false)}
         onPublished={() => reloadInbox(true)} />}
       <NotificationDetails item={detail?.item} read={detail?.read} onClose={() => setDetail(undefined)}

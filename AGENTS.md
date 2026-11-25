@@ -67,12 +67,12 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 ## Project Checks
 
-For code changes here, prefer:
+Use pnpm for dependency installation and project scripts. Install from the lockfile with `pnpm install --frozen-lockfile`.
+
+For static checks, use `pnpm run lint` and `git diff --check`. When a build is required, use:
 
 ```bash
-npm run lint
-npm run build
-git diff --check
+pnpm run build
 ```
 
 For route or UI changes, verify the relevant path in the dev server when practical.

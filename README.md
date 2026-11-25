@@ -2,9 +2,11 @@
 
 ## LoadUp Admin 本地运行
 
+在 `loadup-admin` 仓库根目录执行。Node.js 和 pnpm 版本见下方的 [Prerequisites](#prerequisites)。
+
 ```sh
-npm ci
-npm run dev
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
 打开 http://127.0.0.1:5173/，用现有的 UPMS 账号登录。开发服务器把 `/api` 转发到 `127.0.0.1:8080`，请求默认携带 `X-Tenant-Code: local`。可在 `.env.local` 配置 `LOADUP_API_TARGET` 和 `VITE_LOADUP_TENANT_CODE`。
@@ -97,16 +99,17 @@ src/
 ## Getting Started
 
 ### Prerequisites
-- Node.js 20.19+ or 22.12+
-- npm
+
+- Node.js 22.13+ on the 22.x release line, or Node.js 24+
+- pnpm at the version pinned in [package.json](package.json). If you use Corepack, run `corepack enable pnpm` to use that version.
 
 ### Installation
 
 ```bash
-git clone https://github.com/itsyujay/react-admin-dashboard.git
-cd react-admin-dashboard
-npm install
-npm run dev
+git clone https://github.com/loadup-cloud/loadup-admin.git
+cd loadup-admin
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
 Visit `http://localhost:5173`.
@@ -216,22 +219,24 @@ VITE_USE_MOCK=true             # use built-in mock auth/data
 
 ---
 
-## NPM Scripts
+## pnpm Scripts
 
 ```bash
-npm run dev       # start dev server
-npm run build     # production build
-npm run preview   # preview the production build
-npm run lint      # ESLint check (ts/tsx)
+pnpm run dev       # start dev server
+pnpm run build     # production build
+pnpm run preview   # preview the production build
+pnpm run lint      # ESLint check (ts/tsx)
 ```
 
 ---
 
 ## Deployment
-Output lives in `dist/`. Any static host works:
-- [Vercel](https://vercel.com/) – zero-config for Vite
-- [Netlify](https://www.netlify.com/) – continuous deployments
-- [GitHub Pages](https://pages.github.com/) – static hosting
+
+Install with `pnpm install --frozen-lockfile`, run `pnpm run build`, and publish `dist/`. GitHub Actions uses the pinned pnpm version for installation, auditing, linting, and builds.
+
+Vercel uses the install and build commands in [vercel.json](vercel.json). Set `ENABLE_EXPERIMENTAL_COREPACK=1` in the Vercel project to use the exact pnpm version from `package.json`. See [Vercel's Corepack setup](https://vercel.com/docs/builds/configure-a-build#corepack).
+
+You can also publish `dist/` to [Netlify](https://www.netlify.com/) or [GitHub Pages](https://pages.github.com/).
 
 ---
 
@@ -239,7 +244,7 @@ Output lives in `dist/`. Any static host works:
 PRs and issues are welcome! Please:
 1. Fork the repo & create a feature branch
 2. Add tests or docs where it makes sense
-3. Run `npm run lint` before submitting
+3. Run `pnpm run lint` before submitting
 
 ---
 

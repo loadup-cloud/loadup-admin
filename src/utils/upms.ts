@@ -187,13 +187,14 @@ export function toUpmsPage<T>({ data, pageInfo }: Envelope<T[]>) {
 }
 
 export async function requestUpms<T>(
-  session: Session, path: string, body: object = {}, method: 'GET' | 'POST' | 'PUT' = 'POST',
+  session: Session, path: string, body: object = {}, method: 'GET' | 'POST' | 'PUT' | 'PATCH' = 'POST',
+  extraHeaders?: Record<string, string>,
 ) {
-  if (method === 'POST') return post<T>(path, body, session.accessToken)
-  const init: FetchOptions = method === 'GET'
-    ? { method }
-    : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-  return readJson<T>(await fetchApi(path, init, session.accessToken))
+  const headers = new Headers(extraHeaders)
+  if (method !== 'GET') headers.set('Content-Type', 'application/json')
+  return readJson<T>(await fetchApi(path, {
+    method, headers, body: method === 'GET' ? undefined : JSON.stringify(body),
+  }, session.accessToken))
 }
 
 export async function requestUpmsBlob(session: Session, path: string) {

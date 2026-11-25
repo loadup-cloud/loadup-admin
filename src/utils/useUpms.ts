@@ -23,8 +23,8 @@ function useAuthorizedCall() {
 
 export function useUpms() {
   const call = useAuthorizedCall()
-  return useCallback(<T,>(path: string, body?: object, method?: 'GET' | 'POST' | 'PUT') =>
-    call((session) => requestUpms<T>(session, path, body, method)), [call])
+  return useCallback(<T,>(path: string, body?: object, method?: 'GET' | 'POST' | 'PUT' | 'PATCH', headers?: Record<string, string>) =>
+    call((session) => requestUpms<T>(session, path, body, method, headers)), [call])
 }
 
 export function useUpmsBlob() {

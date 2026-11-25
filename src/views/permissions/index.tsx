@@ -104,7 +104,7 @@ export default function PermissionsPage() {
           <Form.Item name="permissionName" label="权限名称" rules={[{ required: true, whitespace: true, max: 50 }]}>
             <Input maxLength={50} />
           </Form.Item>
-          <Form.Item name="permissionCode" label="权限编码" rules={[{ required: true, pattern: /^[a-z:]{1,100}$/, message: '请输入小写字母或冒号' }]}>
+          <Form.Item name="permissionCode" label="权限编码" rules={[{ required: true, pattern: /^(?:[a-z:]{1,100}|approval:[a-z][a-z0-9_.-]{0,63}:(?:design|start|decide|adjust|read|retry))$/, message: '请输入小写字母和冒号，或有效的应用审批权限编码' }]}>
             <Input maxLength={100} disabled={Boolean(editing)} />
           </Form.Item>
           <Form.Item name="permissionType" label="权限类型" rules={[{ required: true }]}><Select options={permissionTypes} /></Form.Item>

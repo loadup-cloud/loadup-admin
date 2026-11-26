@@ -11,7 +11,7 @@ import { useNotificationUnread } from '../notifications/notificationUnreadContex
 const recentQuery = { page: 1, size: 5, unreadOnly: true }
 
 function RecentUnread({ onSelect, onClose }: { onSelect: (item: InboxNotification) => void; onClose: () => void }) {
-  const recent = useUpmsData<InboxNotification[]>('/notifications/list', recentQuery)
+  const recent = useUpmsData<InboxNotification[]>('/inbox/list', recentQuery)
   return (
     <Space orientation="vertical" size="small" role="region" aria-label="最近未读通知"
       style={{ width: 'min(340px, calc(100vw - 48px))' }}>

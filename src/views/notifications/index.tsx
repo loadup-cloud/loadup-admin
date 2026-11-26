@@ -8,6 +8,8 @@ import { fileDate } from '../../utils/fileResources'
 import type { InboxNotification } from '../../utils/notifications'
 import { isSuperAdmin, toUpmsPage } from '../../utils/upms'
 import { upmsErrorText, useUpms } from '../../utils/useUpms'
+import GotoneAccountsDialog from './GotoneAccountsDialog'
+import GotoneDeliveryDialog from './GotoneDeliveryDialog'
 import NotificationRoutesDialog from './NotificationRoutesDialog'
 import PublishNotificationDialog from './PublishNotificationDialog'
 
@@ -29,6 +31,8 @@ export default function NotificationsPage() {
   const [detail, setDetail] = useState<{ item: InboxNotification; read: boolean }>()
   const [publishing, setPublishing] = useState(false)
   const [configuringRoutes, setConfiguringRoutes] = useState(false)
+  const [configuringAccounts, setConfiguringAccounts] = useState(false)
+  const [viewingDeliveries, setViewingDeliveries] = useState(false)
 
   const loadPage = useCallback(async ({ current = 1, pageSize = 20, status }: InboxFilters & {
     current?: number
@@ -36,7 +40,7 @@ export default function NotificationsPage() {
   }) => {
     setLoadError('')
     try {
-      return toUpmsPage(await request<InboxNotification[]>('/notifications/list', {
+      return toUpmsPage(await request<InboxNotification[]>('/inbox/list', {
         page: current, size: pageSize, unreadOnly: status === 'unread',
       }))
     } catch (failure) {
@@ -54,7 +58,7 @@ export default function NotificationsPage() {
     if (pending) return
     setPending(action)
     try {
-      const { data } = await request<{ updated: number }>(`/notifications/${action.kind}`, action.id ? { id: action.id } : {})
+      const { data } = await request<{ updated: number }>(`/inbox/${action.kind}`, action.id ? { id: action.id } : {})
       setDetail((current) => {
         if (!current || (action.id && current.item.id !== action.id)) return current
         return action.kind === 'archive' ? undefined : { ...current, read: true }
@@ -146,11 +150,15 @@ export default function NotificationsPage() {
               全部标记已读
             </Button>
           </Popconfirm>,
-          canPublish && <Button key="routes" onClick={() => setConfiguringRoutes(true)}>渠道配置</Button>,
+          canPublish && <Button key="routes" onClick={() => setConfiguringRoutes(true)}>服务编码</Button>,
+          canPublish && <Button key="accounts" onClick={() => setConfiguringAccounts(true)}>系统发送配置</Button>,
+          canPublish && <Button key="deliveries" onClick={() => setViewingDeliveries(true)}>投递记录</Button>,
           canPublish && <Button key="publish" type="primary" onClick={() => setPublishing(true)}>发布通知</Button>,
         ]}
       />
       {canPublish && configuringRoutes && <NotificationRoutesDialog onClose={() => setConfiguringRoutes(false)} />}
+      {canPublish && configuringAccounts && <GotoneAccountsDialog onClose={() => setConfiguringAccounts(false)} />}
+      {canPublish && viewingDeliveries && <GotoneDeliveryDialog onClose={() => setViewingDeliveries(false)} />}
       {canPublish && publishing && <PublishNotificationDialog onClose={() => setPublishing(false)}
         onPublished={() => reloadInbox(true)} />}
       <NotificationDetails item={detail?.item} read={detail?.read} onClose={() => setDetail(undefined)}

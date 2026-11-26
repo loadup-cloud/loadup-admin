@@ -3,6 +3,6 @@ import { useUpmsData } from '../../utils/useUpms'
 import { NotificationUnreadContext } from './notificationUnreadContext'
 
 export default function NotificationUnreadProvider({ children }: { children: ReactNode }) {
-  const unread = useUpmsData<{ count: number }>('/notifications/unread-count')
+  const unread = useUpmsData<{ count: number }>('/inbox/unread-count')
   return <NotificationUnreadContext.Provider value={unread}>{children}</NotificationUnreadContext.Provider>
 }

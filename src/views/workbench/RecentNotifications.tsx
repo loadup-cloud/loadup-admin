@@ -11,7 +11,7 @@ const recentQuery = { page: 1, size: 5 }
 type ReadAction = { id: string } | 'all'
 
 export default function RecentNotifications() {
-  const recent = useUpmsData<InboxNotification[]>('/notifications/list', recentQuery)
+  const recent = useUpmsData<InboxNotification[]>('/inbox/list', recentQuery)
   const unread = useNotificationUnread()
   const request = useUpms()
   const { message } = App.useApp()
@@ -28,9 +28,9 @@ export default function RecentNotifications() {
     setPending(action)
     try {
       if (action === 'all') {
-        await request('/notifications/read-all')
+        await request('/inbox/read-all')
       } else {
-        await request('/notifications/read', { id: action.id })
+        await request('/inbox/read', { id: action.id })
       }
       setSelected((current) => {
         if (!current || (action !== 'all' && current.item.id !== action.id)) return current

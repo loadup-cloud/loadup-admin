@@ -1,6 +1,7 @@
 import { App, Button, Form, Input, InputNumber, Popconfirm, Select, Space, Switch, Tag, TreeSelect } from 'antd'
 import type { TableColumnsType } from 'antd'
 import { useState } from 'react'
+import { useMenuAccess } from '../../components/auth/menuAccess'
 import UpmsFormDialog from '../../components/common/UpmsFormDialog'
 import UpmsTreeTable from '../../components/common/UpmsTreeTable'
 import { enabledOptions, permissionTypes, treeOptions, type Permission } from '../../utils/upmsModels'
@@ -24,6 +25,7 @@ type PermissionFields = {
 export default function PermissionsPage() {
   const tree = useUpmsData<Permission[]>('/upms/permission/tree')
   const request = useUpms()
+  const { retry: reloadMenu } = useMenuAccess()
   const { message } = App.useApp()
   const [editing, setEditing] = useState<Permission | null>()
   const records = tree.data ?? []
@@ -36,6 +38,7 @@ export default function PermissionsPage() {
       await request('/upms/permission/create', { ...fields, permissionCode })
     }
     tree.reload()
+    reloadMenu()
     void message.success('权限已保存')
   }
 
@@ -43,6 +46,7 @@ export default function PermissionsPage() {
     try {
       await request('/upms/permission/delete', { id: row.id })
       tree.reload()
+      reloadMenu()
       void message.success('权限已删除')
     } catch (error) {
       void message.error(upmsErrorText(error))

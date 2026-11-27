@@ -1,10 +1,13 @@
 import { useEffect, useState, useRef } from 'react';
-import { Layout, Menu } from 'antd';
+import { AppstoreOutlined, SettingOutlined, UserOutlined } from '@ant-design/icons';
+import { Button, Layout, Menu } from 'antd';
 import type { MenuItemType } from 'antd/es/menu/interface';
-import { AdminRouterItem, routes } from '../../router';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { routes } from '../../router';
+import { matchPath, useLocation, useNavigate } from 'react-router-dom';
 import useUserStore from '../../store/user';
 import { isSuperAdmin } from '../../utils/upms';
+import type { Permission } from '../../utils/upmsModels';
+import { useMenuAccess } from '../auth/menuAccess';
 
 const { Sider } = Layout;
 
@@ -27,27 +30,58 @@ const useResponsive = () => {
   return { isMobile, isTablet }
 }
 
-const getMenuItems = (routes: AdminRouterItem[], isSuperAdmin: boolean): MenuItemType[] => {
-  const sortedRoutes = [...routes].sort((a, b) => {
-    const orderA = a.meta?.order ?? 0
-    const orderB = b.meta?.order ?? 0
-    return orderA - orderB
+type NavigationItem = MenuItemType & { key: string; children?: NavigationItem[] }
+
+function getMenuItems(entries: Permission[], superAdmin: boolean): NavigationItem[] {
+  const routeMenus = routes.flatMap(({ meta }) =>
+    meta && typeof meta.key === 'string' && !meta.hideInMenu ? [{ ...meta, key: meta.key }] : [],
+  ).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+
+  const configuredRoutes = new Map(routeMenus
+    .filter((entry) => entry.requiresMenuGrant)
+    .map((entry) => [entry.key, entry]))
+
+  const toItems = (permissions: Permission[]): NavigationItem[] => permissions.flatMap((permission) => {
+    const route = configuredRoutes.get(permission.resourcePath ?? '')
+    const children = toItems(permission.children ?? [])
+    const page = route && (!route.requiresSuperAdmin || superAdmin)
+      ? [{ key: route.key, label: permission.permissionName, icon: route.icon }]
+      : []
+
+    return children.length
+      ? [{ key: `upms-menu:${permission.id}`, label: permission.permissionName, icon: <AppstoreOutlined />,
+        children: [...page, ...children] }]
+      : page
   })
 
-  return sortedRoutes.map(itm => {
-    if (!itm.meta) return null
-    // Filter out routes that should be hidden in menu
-    if (itm.meta.hideInMenu || (itm.meta.requiresSuperAdmin && !isSuperAdmin)) return null
-    let children = null
-    if (itm.children) children = getMenuItems(itm.children, isSuperAdmin)
-    return children ? {
-      ...itm.meta,
-      children
-    } : {
-      ...itm.meta,
-      path: itm.path,
+  const personal: NavigationItem[] = []
+  const system: NavigationItem[] = []
+  for (const { key, label, icon, requiresMenuGrant, requiresSuperAdmin } of routeMenus) {
+    if (requiresMenuGrant) continue
+    if (requiresSuperAdmin) {
+      if (superAdmin) system.push({ key, label, icon })
+    } else {
+      personal.push({ key, label, icon })
     }
-  }).filter(itm => !!itm)
+  }
+
+  return [
+    { key: 'account', label: '个人中心', icon: <UserOutlined />, children: personal },
+    ...toItems(entries),
+    ...(system.length ? [{ key: 'system', label: '系统管理', icon: <SettingOutlined />, children: system }] : []),
+  ]
+}
+
+function activeMenu(items: NavigationItem[], pathname: string): string[] {
+  for (const item of items) {
+    if (item.children) {
+      const child = activeMenu(item.children, pathname)
+      if (child.length) return [...child, item.key]
+    } else if (matchPath(item.key, pathname)) {
+      return [item.key]
+    }
+  }
+  return []
 }
 
 /**
@@ -65,10 +99,13 @@ type PageSidebarProps = {
 const PageSidebar = (props: PageSidebarProps) => {
   const { autoCollapse = true, height = '100%', collapsed: externalCollapsed, onCollapse } = props
   const session = useUserStore((state) => state.session)
-  const menuItems = getMenuItems(routes, isSuperAdmin(session))
+  const menu = useMenuAccess()
+  const menuItems = session ? getMenuItems(menu.entries, isSuperAdmin(session)) : []
   const navigate = useNavigate()
-  const [lastOpenedMenu, setLastOpenedMenu] = useState<string[]>([])
   const location = useLocation()
+  const [opened, setOpened] = useState<{ pathname: string; keys: string[] }>()
+  const [selected, ...parents] = activeMenu(menuItems, location.pathname)
+  const openKeys = opened?.pathname === location.pathname ? opened.keys : parents
   
   // Responsive breakpoints
   const { isMobile } = useResponsive()
@@ -100,7 +137,7 @@ const PageSidebar = (props: PageSidebarProps) => {
   }
 
   const onSwitchMenu = ({ key, keyPath }: { key: string; keyPath: string[] }) => {
-    if (autoCollapse && keyPath.slice(1)) setLastOpenedMenu(keyPath.slice(1))
+    setOpened({ pathname: key, keys: autoCollapse ? keyPath.slice(1) : openKeys })
     navigate(key)
     // Auto collapse sidebar on mobile after navigation
     if (isMobile && !collapsed) {
@@ -109,7 +146,7 @@ const PageSidebar = (props: PageSidebarProps) => {
   }
 
   const onOpenChange = (openKeys: string[]) => {
-    setLastOpenedMenu(openKeys)
+    setOpened({ pathname: location.pathname, keys: openKeys })
   }
 
   return (
@@ -134,15 +171,18 @@ const PageSidebar = (props: PageSidebarProps) => {
       trigger={null}
     >
       <Menu 
-        openKeys={collapsed ? undefined : lastOpenedMenu} 
+        openKeys={collapsed ? undefined : openKeys}
         onOpenChange={collapsed ? undefined : onOpenChange} 
-        selectedKeys={[location.pathname]}
+        selectedKeys={selected ? [selected] : []}
         mode="inline" 
         items={menuItems} 
         onClick={onSwitchMenu}
         inlineCollapsed={collapsed}
         triggerSubMenuAction={collapsed ? 'hover' : 'click'}
       />
+      {session && menu.status === 'error' && !collapsed && (
+        <Button type="link" onClick={menu.retry}>重新加载业务菜单</Button>
+      )}
     </Sider>
   )
 }

@@ -14,6 +14,7 @@ const routes: AdminRouterItem[] = [
       label: '设备领用申请',
       title: '设备领用申请',
       icon: <FormOutlined />,
+      requiresMenuGrant: true,
       order: 10,
     },
   },

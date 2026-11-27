@@ -4,8 +4,13 @@ import type { AdminRouterItem } from '../../router'
 import LazyRoute from '../../components/common/LazyRoute'
 
 const LoginPage = lazy(() => import('./login'))
+const PasswordResetPage = lazy(() => import('./password-reset'))
 
 const authRoutes: AdminRouterItem[] = [
+  {
+    path: 'auth/password-reset',
+    element: <LazyRoute><PasswordResetPage /></LazyRoute>,
+  },
   {
     path: 'auth/login',
     element: (

@@ -2,6 +2,12 @@
 
 LoadUp Admin 是连接 UPMS 与 LoadUp 业务模块的管理端。页面、请求与会话边界见 [架构设计](ARCHITECTURE.md)。
 
+## 角色菜单
+
+侧栏将工作台、账号安全和站内通知归到「个人中心」。超级管理员可进入「系统管理」。业务页面由 UPMS 的有效角色菜单驱动。管理员可在「权限管理」创建无路径的分组，随后为其二级菜单填写 `/files`、`/transfer`、`/forms/design`、`/forms/device-request` 或 `/approval`，再在「角色管理」勾选页面权限。Boot 提供默认角色和菜单，详见 [Boot 接入手册](../loadup-boot/README.md#admin-菜单和角色)。
+
+保存角色授权后，用户重新登录即可更新菜单和令牌中的应用权限。
+
 ## 本地运行
 
 需要 Node.js 22.13+（22.x）或 24+，pnpm 版本由 [package.json](package.json) 固定。先启动 [LoadUp Boot](../loadup-boot/README.md) 或兼容的后端，再在本仓库执行。
@@ -41,10 +47,14 @@ pnpm run dev
 
 「审批管理」位于 `/approval`，提供审批模板、发起申请、待处理事项和申请详情。角色、模板的可见与操作范围由 [审批模块](../loadup-modules/loadup-modules-approval/README.md) 决定。
 
+## 修改与重置密码
+
+「个人中心 → 账号安全 → 修改密码」和登录页的「忘记密码」都在打开表单时读取 UPMS 的当前规则，显示字符数、UTF-8 字节上限和所需字符类型。邮件重置需要已验证的邮箱及宿主的 [SMTP 配置](../loadup-boot/README.md#upms-密码强度)。
+
 ## 新增管理页面
 
 1. 在 `src/views/<业务名>` 放置页面和对应的 `*.router.tsx`，通过默认导出注册 `AdminRouterItem`。
-2. 配置 `meta.key`、`label`、`title` 与 `order`。详情页用 `hideInMenu` 控制菜单展示，超级管理员页面用 `requiresSuperAdmin` 保护界面入口。
+2. 配置 `meta.key`、`label`、`title` 与 `order`。详情页用 `hideInMenu` 控制菜单展示。用 `requiresSuperAdmin` 标记系统管理页面。业务页面设置 `requiresMenuGrant`，并在 UPMS 登记匹配 `meta.key` 的菜单资源路径。
 3. 使用 `src/utils/upms.ts` 中的请求适配器接入后端，按统一业务报文处理成功、失败和分页。服务端执行资源授权。
 4. 使用 `pnpm run lint` 检查页面和类型约定，连接本地后端检查页面入口和请求。
 

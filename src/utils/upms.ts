@@ -27,6 +27,19 @@ export type UpmsUser = {
   lastLoginTime?: string | null
 }
 
+export type PasswordCharacterClass = 'UPPERCASE' | 'LOWERCASE' | 'DIGIT' | 'SYMBOL'
+
+export type PasswordPolicy = {
+  name: string
+  minCharacters: number
+  maxUtf8Bytes: number
+  requiredCharacterClasses: PasswordCharacterClass[]
+}
+
+export type NewPasswordFields = { newPassword: string; confirmPassword: string }
+
+export type ResetPasswordFields = NewPasswordFields & { username: string; verificationCode: string }
+
 export type AccountAction = 'lock' | 'unlock'
 
 export class UpmsError extends Error {
@@ -44,6 +57,10 @@ const errorMessages: Record<string, string> = {
   ACCESS_DENIED: '当前账号没有执行此操作的权限。',
   PARAM_ILLEGAL: '请检查输入内容。',
   USER_NOT_FOUND: '该用户已不存在，请刷新列表。',
+  UPMS_INVALID_PASSWORD: '请输入至少 8 个字符、UTF-8 编码不超过 72 字节的密码。',
+  UPMS_PASSWORD_STRENGTH_REQUIRED: '密码不符合当前的强度要求，请按页面提示修改。',
+  UPMS_VERIFICATION_CODE_IS_INVALID_OR_EXPIRED: '验证码无效或已过期，请重新获取。',
+  UPMS_PASSWORD_RESET_UNAVAILABLE: '邮件重置暂不可用，请联系管理员。',
   UPMS_USER_NOT_FOUND: '该用户已不存在，请刷新列表。',
   UPMS_USERNAME_ALREADY_EXISTS: '该用户名已存在，请使用其他用户名。',
   UPMS_EMAIL_IS_ALREADY_REGISTERED: '该邮箱已被使用。',
@@ -105,6 +122,32 @@ async function post<T>(path: string, body: unknown, accessToken?: string) {
     ? { method: 'POST', body }
     : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
   return readJson<T>(await fetchApi(path, init, accessToken))
+}
+
+export async function getPasswordPolicy(signal: AbortSignal) {
+  const { data } = await readJson<PasswordPolicy>(
+    await fetchApi('/auth/password-policy', { method: 'GET', signal }),
+  )
+  if (!data || typeof data.name !== 'string' ||
+      !Number.isSafeInteger(data.minCharacters) || data.minCharacters < 1 ||
+      !Number.isSafeInteger(data.maxUtf8Bytes) || data.maxUtf8Bytes < data.minCharacters ||
+      !Array.isArray(data.requiredCharacterClasses) ||
+      data.requiredCharacterClasses.some((kind) => !['UPPERCASE', 'LOWERCASE', 'DIGIT', 'SYMBOL'].includes(kind))) {
+    throw new UpmsError('INVALID_RESPONSE', 'UPMS 未返回密码要求。')
+  }
+  return data
+}
+
+export function isPasswordPolicyError(error: unknown) {
+  return error instanceof UpmsError && ['UPMS_INVALID_PASSWORD', 'UPMS_PASSWORD_STRENGTH_REQUIRED'].includes(error.code)
+}
+
+export function sendPasswordResetCode(email: string) {
+  return post<void>('/auth/password-reset/code', { email: email.trim() })
+}
+
+export function resetPassword(values: ResetPasswordFields) {
+  return post<void>('/auth/password-reset', { ...values, username: values.username.trim(), verificationType: 'EMAIL' })
 }
 
 const sessionKey = 'loadup-admin.access-token'

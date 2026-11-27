@@ -9,7 +9,7 @@ const routes: AdminRouterItem[] = [
   {
     path: 'files',
     element: <LazyRoute><FilesPage /></LazyRoute>,
-    meta: { key: '/files', label: '文件资源', title: '文件资源', icon: <FolderOpenOutlined />, order: 7 },
+    meta: { key: '/files', label: '文件资源', title: '文件资源', icon: <FolderOpenOutlined />, requiresMenuGrant: true, order: 7 },
   },
 ]
 

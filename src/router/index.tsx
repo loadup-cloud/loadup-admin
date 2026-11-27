@@ -14,6 +14,7 @@ export type AdminRouterItem = RouteObject & {
     hideInMenu?: boolean
     requiresAuth?: boolean
     requiresSuperAdmin?: boolean
+    requiresMenuGrant?: boolean
     order?: number
   }
   children?: AdminRouterItem[]
@@ -57,7 +58,10 @@ const wrapWithProtectedRoute = (route: AdminRouterItem): AdminRouterItem => {
   return {
     ...route,
     element: route.element
-      ? <ProtectedRoute requiresSuperAdmin={route.meta?.requiresSuperAdmin}>{route.element}</ProtectedRoute>
+      ? <ProtectedRoute
+        requiresSuperAdmin={route.meta?.requiresSuperAdmin}
+        menuPath={route.meta?.requiresMenuGrant ? String(route.meta.key) : undefined}
+      >{route.element}</ProtectedRoute>
       : route.element,
     children: wrappedChildren,
   } as AdminRouterItem

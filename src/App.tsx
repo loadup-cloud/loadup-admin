@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import PageLayout from './components/layout';
 import NotificationUnreadProvider from './components/notifications/NotificationUnreadProvider';
+import MenuAccessProvider from './components/auth/MenuAccessProvider';
 import { App as AntApp, ConfigProvider } from 'antd';
 import zhCN from 'antd/locale/zh_CN';
 import useConfigStore from './store/config';
@@ -63,7 +64,9 @@ const App: React.FC = () => {
     }}>
       <AntApp>
         {isAuthPage ? <Outlet /> : session ? (
-          <NotificationUnreadProvider key={session.userId}><PageLayout /></NotificationUnreadProvider>
+          <MenuAccessProvider key={session.accessToken} session={session}>
+            <NotificationUnreadProvider key={session.userId}><PageLayout /></NotificationUnreadProvider>
+          </MenuAccessProvider>
         ) : <PageLayout />}
       </AntApp>
     </ConfigProvider>

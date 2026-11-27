@@ -8,7 +8,7 @@ const FormDesignPage = lazy(() => import('.'))
 const routes: AdminRouterItem[] = [{
   path: 'forms/design',
   element: <LazyRoute><FormDesignPage /></LazyRoute>,
-  meta: { key: '/forms/design', label: '表单设计', title: '表单设计', icon: <LayoutOutlined />, order: 9 },
+  meta: { key: '/forms/design', label: '表单设计', title: '表单设计', icon: <LayoutOutlined />, requiresMenuGrant: true, order: 9 },
 }]
 
 export default routes

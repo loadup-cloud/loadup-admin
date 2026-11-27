@@ -1,8 +1,10 @@
 import { ProTable, type ProColumns } from '@ant-design/pro-components'
 import { Alert, App, Button, Descriptions, Form, Input, Skeleton, Tag, Typography } from 'antd'
 import { useCallback, useState } from 'react'
+import NewPasswordFields from '../../components/auth/NewPasswordFields'
+import { usePasswordPolicy } from '../../components/auth/usePasswordPolicy'
 import UpmsFormDialog from '../../components/common/UpmsFormDialog'
-import { toUpmsPage } from '../../utils/upms'
+import { isPasswordPolicyError, toUpmsPage, type NewPasswordFields as NewPasswordValues } from '../../utils/upms'
 import { upmsErrorText, useUpms, useUpmsData } from '../../utils/useUpms'
 
 type Overview = {
@@ -22,7 +24,31 @@ type LoginEntry = {
   loginType?: string | null
 }
 
-type PasswordFields = { oldPassword: string; newPassword: string; confirmPassword: string }
+type ChangePasswordFields = NewPasswordValues & { oldPassword: string }
+
+function ChangePasswordDialog({ onClose }: { onClose: () => void }) {
+  const request = useUpms()
+  const { message } = App.useApp()
+  const policy = usePasswordPolicy()
+
+  return (
+    <UpmsFormDialog<ChangePasswordFields> title="修改密码" onClose={onClose}
+      onSave={async (values) => {
+        try {
+          await request('/account/security/password', values)
+          void message.success('密码已修改')
+        } catch (error) {
+          if (isPasswordPolicyError(error)) policy.reload()
+          throw error
+        }
+      }}>
+      <Form.Item name="oldPassword" label="当前密码" rules={[{ required: true }]}>
+        <Input.Password autoComplete="current-password" />
+      </Form.Item>
+      <NewPasswordFields {...policy} />
+    </UpmsFormDialog>
+  )
+}
 
 function dateTime(value?: string | null) {
   return value?.replace('T', ' ').slice(0, 19) || '—'
@@ -38,7 +64,6 @@ const columns: ProColumns<LoginEntry>[] = [
 export default function AccountSecurityPage() {
   const overview = useUpmsData<Overview>('/account/security/overview')
   const request = useUpms()
-  const { message } = App.useApp()
   const [changingPassword, setChangingPassword] = useState(false)
   const [listError, setListError] = useState('')
 
@@ -77,38 +102,7 @@ export default function AccountSecurityPage() {
         search={false} options={{ density: false, setting: false }} scroll={{ x: 620 }}
         pagination={{ defaultPageSize: 20, pageSizeOptions: [10, 20, 50, 100], showSizeChanger: true,
           showTotal: (total) => `共 ${total} 条`, locale: { items_per_page: '条/页' } }} />
-      {changingPassword && (
-        <UpmsFormDialog<PasswordFields>
-          title="修改密码"
-          onClose={() => setChangingPassword(false)}
-          onSave={async (values) => {
-            await request('/account/security/password', values)
-            void message.success('密码已修改')
-          }}
-        >
-          <Form.Item name="oldPassword" label="当前密码" rules={[{ required: true }]}>
-            <Input.Password autoComplete="current-password" />
-          </Form.Item>
-          <Form.Item name="newPassword" label="新密码" rules={[{ required: true }, {
-            validator: (_, value?: string) => {
-              if (value && (Array.from(value).length < 8 || new TextEncoder().encode(value).length > 72)) {
-                return Promise.reject(new Error('请输入至少 8 个字符、UTF-8 编码不超过 72 字节的密码。'))
-              }
-              return Promise.resolve()
-            },
-          }]}>
-            <Input.Password autoComplete="new-password" />
-          </Form.Item>
-          <Form.Item name="confirmPassword" label="确认新密码" dependencies={['newPassword']}
-            rules={[{ required: true }, ({ getFieldValue }) => ({
-              validator: (_, value) => !value || getFieldValue('newPassword') === value
-                ? Promise.resolve()
-                : Promise.reject(new Error('两次输入的新密码不一致。')),
-            })]}>
-            <Input.Password autoComplete="new-password" />
-          </Form.Item>
-        </UpmsFormDialog>
-      )}
+      {changingPassword && <ChangePasswordDialog onClose={() => setChangingPassword(false)} />}
     </section>
   )
 }

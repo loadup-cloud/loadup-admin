@@ -9,7 +9,7 @@ const routes: AdminRouterItem[] = [
   {
     path: 'transfer',
     element: <LazyRoute><TransferPage /></LazyRoute>,
-    meta: { key: '/transfer', label: '导入导出任务', title: '导入导出任务', icon: <SwapOutlined />, order: 8 },
+    meta: { key: '/transfer', label: '导入导出任务', title: '导入导出任务', icon: <SwapOutlined />, requiresMenuGrant: true, order: 8 },
   },
 ]
 

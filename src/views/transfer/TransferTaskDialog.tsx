@@ -1,6 +1,7 @@
 import { Alert, Button, Form, Input, Pagination, Select, Space } from 'antd'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useMenuAccess } from '../../components/auth/menuAccess'
 import UpmsFormDialog from '../../components/common/UpmsFormDialog'
 import type { FileResource } from '../../utils/fileResources'
 import { toUpmsPage } from '../../utils/upms'
@@ -80,6 +81,7 @@ export default function TransferTaskDialog({ kind, onClose, onSubmitted }: {
 }) {
   const request = useUpms()
   const importing = kind === 'IMPORT'
+  const { paths } = useMenuAccess()
 
   async function submit(values: TaskForm) {
     const { data } = await request<TransferTask>(importing ? '/transfer-tasks/imports' : '/transfer-tasks/exports', {
@@ -98,7 +100,7 @@ export default function TransferTaskDialog({ kind, onClose, onSubmitted }: {
       </Form.Item>
       {importing && (
         <Form.Item name="source" label="源文件" rules={[{ required: true, message: '请选择源文件' }]}
-          extra={<>文件可先在<Link to="/files">文件资源</Link>中上传。</>}>
+          extra={paths.has('/files') && <>文件可先在<Link to="/files">文件资源</Link>中上传。</>}>
           <SourceFileSelect />
         </Form.Item>
       )}

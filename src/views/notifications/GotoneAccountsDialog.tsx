@@ -17,6 +17,11 @@ const adapters = {
   'SMS/aliyun': { label: '短信 · 阿里云', fields: [
     { key: 'accessKeyId', label: 'AccessKey ID' }, { key: 'signature', label: '默认签名（可选）', optional: true },
   ] },
+  'SMS/tencent': { label: '短信 · 腾讯云', fields: [
+    { key: 'secretId', label: 'SecretId' }, { key: 'sdkAppId', label: '短信 SdkAppId' },
+    { key: 'region', label: '地域，例如 ap-guangzhou' },
+    { key: 'signature', label: '默认签名（可选）', optional: true },
+  ] },
   'EMAIL/smtp': { label: '邮件 · SMTP', fields: [
     { key: 'host', label: 'SMTP 主机' }, { key: 'port', label: '端口' },
     { key: 'tls', label: '加密方式', options: ['STARTTLS', 'SMTPS'] },
@@ -27,10 +32,28 @@ const adapters = {
     { key: 'projectId', label: 'Firebase 项目 ID' }, { key: 'appId', label: '应用标识' },
     { key: 'platform', label: '设备平台', options: ['ANDROID', 'IOS', 'WEB'] },
   ] },
+  'PUSH/jpush': { label: '推送 · 极光', fields: [
+    { key: 'appKey', label: 'AppKey' }, { key: 'appId', label: '应用标识' },
+    { key: 'platform', label: '设备平台', options: ['ANDROID', 'IOS'] },
+    { key: 'apnsProduction', label: 'APNs 生产环境（默认 true）', options: ['true', 'false'], optional: true },
+  ] },
+  'PUSH/xiaomi': { label: '推送 · 小米', fields: [
+    { key: 'appId', label: '应用标识' },
+    { key: 'platform', label: '设备平台', options: ['ANDROID'] },
+    { key: 'packageName', label: 'Android 包名' },
+    { key: 'channelId', label: '小米通知渠道 ID（可选）', optional: true },
+  ] },
+  'PUSH/huawei': { label: '推送 · 华为 Push Kit', fields: [
+    { key: 'clientId', label: 'Client ID' }, { key: 'appId', label: '应用标识' },
+    { key: 'platform', label: '设备平台', options: ['ANDROID'] },
+  ] },
   'WEBHOOK/https': { label: 'Webhook · HTTPS', fields: [
     { key: 'url', label: 'HTTPS URL（无令牌）', optional: true },
     { key: 'destinationRef', label: '含令牌的 URL 凭证引用', optional: true },
   ] },
+  'WEBHOOK/dingtalk': { label: 'Webhook · 钉钉', fields: [{ key: 'destinationRef', label: '机器人 URL 凭证引用' }] },
+  'WEBHOOK/wecom': { label: 'Webhook · 企业微信', fields: [{ key: 'destinationRef', label: '机器人 URL 凭证引用' }] },
+  'WEBHOOK/feishu': { label: 'Webhook · 飞书', fields: [{ key: 'destinationRef', label: '机器人 URL 凭证引用' }] },
 }
 type AdapterKey = keyof typeof adapters
 
@@ -44,7 +67,7 @@ function AccountEditor({ account, onClose, onSave }: { account?: Account; onClos
       const [channel, adapter] = values.adapterKey.split('/')
       await request('/gotone/accounts', {
         accountCode: values.accountCode, channel, adapter, enabled: values.enabled, priority: values.priority,
-        secretRef: values.secretRef?.trim() || undefined, connectTimeoutMs: values.connectTimeoutMs,
+        secretRef: values.adapterKey === 'WEBHOOK/wecom' ? undefined : values.secretRef?.trim() || undefined, connectTimeoutMs: values.connectTimeoutMs,
         requestTimeoutMs: values.requestTimeoutMs, version: account?.version ?? 0, settings: withoutEmpty(values.settings),
       }, 'PUT')
       onSave()
@@ -67,10 +90,11 @@ function AccountEditor({ account, onClose, onSave }: { account?: Account; onClos
               ? <Select options={field.options.map((value) => ({ value }))} />
               : <Input disabled={account?.channel === 'WEBHOOK'} />}
           </Form.Item>)}
-          <Form.Item name="secretRef" label={key === 'WEBHOOK/https' ? '签名密钥引用（可选）' : '凭证引用'}
-            rules={[{ required: key !== 'WEBHOOK/https' }]} extra="使用 kms:名称 或 env:GOTONE_SECRET_名称">
+          {key !== 'WEBHOOK/wecom' && <Form.Item name="secretRef" preserve={false}
+            label={key.startsWith('WEBHOOK/') ? '签名密钥引用（可选）' : '凭证引用'}
+            rules={[{ required: !key.startsWith('WEBHOOK/') }]} extra="使用 kms:名称 或 env:GOTONE_SECRET_名称">
             <Input placeholder="kms:gotone-email-primary" />
-          </Form.Item>
+          </Form.Item>}
         </section>
       }}
     </Form.Item>
@@ -118,6 +142,10 @@ function SmsBindings({ accounts }: { accounts: Account[] }) {
       </Form.Item>
       <Form.Item name="remoteTemplateId" label="供应商备案模板编号" rules={[{ required: true }]}><Input /></Form.Item>
       <Form.Item name="remoteSignature" label="供应商备案签名"><Input /></Form.Item>
+      <Form.Item noStyle shouldUpdate={(previous, current) => previous.accountCode !== current.accountCode}>
+        {({ getFieldValue }) => accounts.some(({ accountCode, adapter }) => accountCode === getFieldValue('accountCode') && adapter === 'tencent')
+          ? <Alert type="info" title="腾讯云模板变量按位置编号，从 1 开始连续填写。" /> : null}
+      </Form.Item>
       <Form.List name="variables">
         {(fields, { add, remove }) => <>
           {fields.map(({ key, name }) => <Space key={key} align="baseline">

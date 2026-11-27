@@ -8,6 +8,7 @@ import type { Account, NotificationChannel, NotificationRoute } from './notifica
 type RouteFields = Omit<NotificationRoute, 'channels' | 'version'> & {
   selected: NotificationChannel[]
   templates: Partial<Record<NotificationChannel, Record<string, string>>>
+  webhookEndpoints?: string[]
   sample?: Record<string, string>
 }
 type Field = { key: string; label: string; required?: boolean; multiline?: boolean }
@@ -19,7 +20,7 @@ const fields: Record<NotificationChannel, Field[]> = {
     { key: 'body', label: '正文', required: true, multiline: true }, { key: 'actionPath', label: '站内跳转路径' }],
   PUSH: [{ key: 'title', label: '标题', required: true }, { key: 'body', label: '正文', required: true, multiline: true },
     { key: 'platform', label: '限定平台（ANDROID / IOS / WEB）' }, { key: 'ttlSeconds', label: '有效秒数' }],
-  WEBHOOK: [{ key: 'endpointCode', label: '系统端点', required: true }, { key: 'payload', label: 'JSON 正文', required: true, multiline: true }],
+  WEBHOOK: [],
 }
 const emptyRoute: RouteFields = { serviceCode: '', name: '', enabled: true, requiredParameters: [], selected: [], templates: {} }
 
@@ -35,13 +36,23 @@ function RouteEditor({ route, onClose, onSave }: {
   const initial: RouteFields = route ? {
     ...route, selected: route.channels.map(({ channel }) => channel),
     templates: Object.fromEntries(route.channels.map(({ channel, fields }) => [channel, fields])),
+    webhookEndpoints: route.channels.filter(({ channel }) => channel === 'WEBHOOK')
+      .flatMap(({ fields }) => (fields.endpointCodes ?? fields.endpointCode ?? '').split(',').map((code) => code.trim()).filter(Boolean)),
   } : emptyRoute
 
   function payload(values: RouteFields): NotificationRoute {
     return {
       serviceCode: values.serviceCode, name: values.name, description: values.description,
       version: route?.version ?? 0, enabled: values.enabled, requiredParameters: values.requiredParameters ?? [],
-      channels: (values.selected ?? []).map((channel) => ({ channel, fields: withoutEmpty(values.templates?.[channel]) })),
+      channels: (values.selected ?? []).map((channel) => {
+        const fields = withoutEmpty(values.templates?.[channel])
+        if (channel === 'WEBHOOK') {
+          delete fields.endpointCode
+          delete fields.endpointCodes
+          if (values.webhookEndpoints?.length) fields.endpointCodes = values.webhookEndpoints.join(',')
+        }
+        return { channel, fields }
+      }),
     }
   }
 
@@ -63,6 +74,7 @@ function RouteEditor({ route, onClose, onSave }: {
       <Form.Item name="requiredParameters" label="模板参数" extra={'将变量写为 ${变量名}，按 Enter 添加参数。'}>
         <Select mode="tags" maxCount={50} tokenSeparators={[',', '，']} placeholder="例如 orderNo" />
       </Form.Item>
+      {endpoints.error && <Alert showIcon type="error" title={endpoints.error} />}
       <Form.Item noStyle shouldUpdate={(a, b) => a.selected !== b.selected || a.requiredParameters !== b.requiredParameters}>
         {() => <RouteTemplateFields endpoints={endpoints.data ?? []} />}
       </Form.Item>
@@ -94,19 +106,32 @@ function RouteTemplateFields({ endpoints }: { endpoints: Account[] }) {
   const form = Form.useFormInstance<RouteFields>()
   const selected = Form.useWatch('selected', form) ?? []
   const parameters = Form.useWatch('requiredParameters', form) ?? []
+  const selectedEndpoints = Form.useWatch('webhookEndpoints', form) ?? []
+  const webhookAccounts = endpoints.filter(({ channel }) => channel === 'WEBHOOK')
+  const selectedAccounts = webhookAccounts.filter(({ accountCode }) => selectedEndpoints.includes(accountCode))
+  const robotAdapters = ['dingtalk', 'wecom', 'feishu']
+  const needsText = selectedAccounts.some(({ adapter }) => robotAdapters.includes(adapter))
+  const needsPayload = selectedAccounts.some(({ adapter }) => !robotAdapters.includes(adapter))
   return <>
     {selected.map((channel) => <section key={channel}>
       <Typography.Title level={5}>{notificationChannels[channel].label}模板</Typography.Title>
       {fields[channel].map((field) => (
         <Form.Item key={field.key} name={['templates', channel, field.key]} label={field.label}
           rules={field.required ? [{ required: true, whitespace: true }] : undefined}>
-          {field.key === 'endpointCode'
-            ? <Select options={endpoints.filter(({ channel }) => channel === 'WEBHOOK').map(({ accountCode, enabled }) => ({
-              value: accountCode, label: enabled ? accountCode : `${accountCode}（停用）`,
-            }))} />
-            : field.multiline ? <Input.TextArea rows={3} /> : <Input />}
+          {field.multiline ? <Input.TextArea rows={3} /> : <Input />}
         </Form.Item>
       ))}
+      {channel === 'WEBHOOK' && <>
+        <Form.Item name="webhookEndpoints" label="系统端点" rules={[{ required: true, type: 'array', min: 1, max: 20 }]}>
+          <Select mode="multiple" maxCount={20} options={webhookAccounts.map(({ accountCode, adapter, enabled }) => ({
+            value: accountCode, label: `${accountCode} · ${adapter}${enabled ? '' : '（停用）'}`,
+          }))} />
+        </Form.Item>
+        {needsText && <Form.Item name={['templates', 'WEBHOOK', 'text']} label="机器人文本" preserve={false}
+          rules={[{ required: true, whitespace: true }]}><Input.TextArea rows={3} /></Form.Item>}
+        {needsPayload && <Form.Item name={['templates', 'WEBHOOK', 'payload']} label="HTTPS JSON 正文" preserve={false}
+          rules={[{ required: true, whitespace: true }]}><Input.TextArea rows={3} /></Form.Item>}
+      </>}
     </section>)}
     {parameters.length > 0 && <Typography.Title level={5}>预览参数</Typography.Title>}
     {parameters.map((parameter) => <Form.Item key={parameter} name={['sample', parameter]} label={parameter}><Input /></Form.Item>)}

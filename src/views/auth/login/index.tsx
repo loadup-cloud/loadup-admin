@@ -68,7 +68,7 @@ const LoginPage: React.FC = () => {
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         }}
       >
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <div style={{ textAlign: 'center' }}>
             <Title level={2}>登录 LoadUp Admin</Title>
             <Text type="secondary">使用你的 UPMS 账号登录</Text>

@@ -66,7 +66,7 @@ export function GroupLayout({form, fields, disabled}: {
                                     <Col xs={24} md={12}>
                                         <Form.Item name={[name, 'fieldVersionId']} label="字段版本"
                                                    rules={[{required: true}]}>
-                                            <Select showSearch optionFilterProp="label" placeholder="从字段目录选择"
+                                            <Select showSearch={{ optionFilterProp: 'label' }} placeholder="从字段目录选择"
                                                     options={fields.map((version) => ({
                                                         value: version.id,
                                                         label: `${version.field.label} · ${version.field.key} · V${version.version}`,
@@ -144,7 +144,7 @@ function ItemRules({eligible, value, onChange, disabled}: {
     return (
         <Flex vertical gap="small">
             {!disabled &&
-                <Select aria-label="添加字段覆盖" showSearch optionFilterProp="label" placeholder="选择要覆盖的字段"
+                <Select aria-label="添加字段覆盖" showSearch={{ optionFilterProp: 'label' }} placeholder="选择要覆盖的字段"
                         value={null}
                         options={eligible.filter((field) => !(field.key in rules)).map((field) => ({
                             value: field.key, label: `${field.label} · ${field.key}`,
@@ -234,7 +234,7 @@ export function TemplateLayout({form, fields, groups, disabled}: {
                                     <Col xs={24} md={12}>
                                         <Form.Item name={[name, 'groupVersionId']} label="字段组版本"
                                                    rules={[{required: true}]}>
-                                            <Select showSearch optionFilterProp="label" placeholder="选择已发布的字段组"
+                                            <Select showSearch={{ optionFilterProp: 'label' }} placeholder="选择已发布的字段组"
                                                     options={groups.filter((row) => row.status === 'PUBLISHED' || row.id === item?.groupVersionId)
                                                         .map((row) => ({
                                                             value: row.id,

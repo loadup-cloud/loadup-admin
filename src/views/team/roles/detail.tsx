@@ -41,7 +41,7 @@ const RoleDetailPage = () => {
   }
 
   return (
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="large" style={{ width: '100%' }}>
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={12}>
           <Card title="Role Overview">

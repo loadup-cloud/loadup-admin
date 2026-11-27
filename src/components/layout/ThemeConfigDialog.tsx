@@ -102,7 +102,7 @@ const ThemeConfigDialog = ({ open, onClose }: ThemeConfigDialogProps) => {
   }
 
   const renderColorsTab = () => (
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="large" style={{ width: '100%' }}>
       <div>
         <Title level={5}>Preset Themes</Title>
         <Radio.Group
@@ -149,14 +149,14 @@ const ThemeConfigDialog = ({ open, onClose }: ThemeConfigDialogProps) => {
         <Title level={5}>Custom Colors</Title>
         {isDarkMode && (
           <Alert
-            message="Dark Mode Active"
+            title="Dark Mode Active"
             description="Background and Text colors are automatically handled by Ant Design's dark algorithm. Custom values for these colors mainly apply to light mode."
             type="info"
             showIcon
             style={{ marginBottom: 16 }}
           />
         )}
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           {Object.entries(colorLabels).map(([key, label]) => {
             const isAutoHandled = isDarkMode && (key === 'background' || key === 'text')
             return (
@@ -191,10 +191,10 @@ const ThemeConfigDialog = ({ open, onClose }: ThemeConfigDialogProps) => {
   )
 
   const renderSpacingTab = () => (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
       <div>
         <Title level={5}>Padding</Title>
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="small" style={{ width: '100%' }}>
           {(['padding', 'paddingLG', 'paddingMD', 'paddingSM', 'paddingXS', 'paddingXXS'] as const).map((key) => (
             <Row key={key} align="middle" gutter={16}>
               <Col span={8}>
@@ -206,7 +206,7 @@ const ThemeConfigDialog = ({ open, onClose }: ThemeConfigDialogProps) => {
                   onChange={(value) => handleSpacingChange(key, value)}
                   min={0}
                   max={100}
-                  addonAfter="px"
+                  suffix="px"
                   style={{ width: '100%' }}
                 />
               </Col>
@@ -217,7 +217,7 @@ const ThemeConfigDialog = ({ open, onClose }: ThemeConfigDialogProps) => {
       <Divider />
       <div>
         <Title level={5}>Margin</Title>
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="small" style={{ width: '100%' }}>
           {(['margin', 'marginLG', 'marginMD', 'marginSM', 'marginXS', 'marginXXS'] as const).map((key) => (
             <Row key={key} align="middle" gutter={16}>
               <Col span={8}>
@@ -229,7 +229,7 @@ const ThemeConfigDialog = ({ open, onClose }: ThemeConfigDialogProps) => {
                   onChange={(value) => handleSpacingChange(key, value)}
                   min={0}
                   max={100}
-                  addonAfter="px"
+                  suffix="px"
                   style={{ width: '100%' }}
                 />
               </Col>
@@ -241,7 +241,7 @@ const ThemeConfigDialog = ({ open, onClose }: ThemeConfigDialogProps) => {
   )
 
   const renderBorderRadiusTab = () => (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
       {(['borderRadius', 'borderRadiusLG', 'borderRadiusSM', 'borderRadiusXS'] as const).map((key) => (
         <Row key={key} align="middle" gutter={16}>
           <Col span={8}>
@@ -253,7 +253,7 @@ const ThemeConfigDialog = ({ open, onClose }: ThemeConfigDialogProps) => {
               onChange={(value) => handleBorderRadiusChange(key, value)}
               min={0}
               max={50}
-              addonAfter="px"
+              suffix="px"
               style={{ width: '100%' }}
             />
           </Col>
@@ -263,7 +263,7 @@ const ThemeConfigDialog = ({ open, onClose }: ThemeConfigDialogProps) => {
   )
 
   const renderTypographyTab = () => (
-    <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
       {(['fontSize', 'fontSizeLG', 'fontSizeSM', 'fontSizeXL'] as const).map((key) => (
         <Row key={key} align="middle" gutter={16}>
           <Col span={8}>
@@ -275,7 +275,7 @@ const ThemeConfigDialog = ({ open, onClose }: ThemeConfigDialogProps) => {
               onChange={(value) => handleTypographyChange(key, value)}
               min={8}
               max={48}
-              addonAfter="px"
+              suffix="px"
               style={{ width: '100%' }}
             />
           </Col>
@@ -313,7 +313,7 @@ const ThemeConfigDialog = ({ open, onClose }: ThemeConfigDialogProps) => {
         </Button>,
       ]}
       width={700}
-      destroyOnClose
+      destroyOnHidden
     >
       <Tabs
         items={[

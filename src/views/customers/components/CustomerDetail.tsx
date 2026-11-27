@@ -42,15 +42,15 @@ const CustomerDetail = ({ customer, open, onClose, statusRender }: CustomerDetai
 
   return (
     <Drawer
-      width={420}
+      size={420}
       title={customer?.name ?? 'Customer Details'}
       open={open}
       onClose={onClose}
-      destroyOnClose
+      destroyOnHidden
       extra={customer?.status ? statusRender?.(customer.status) ?? <Tag>{customer.status}</Tag> : null}
     >
       {customer ? (
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Descriptions bordered column={1} size="small">
             <Descriptions.Item label="Email">{customer.email}</Descriptions.Item>
             <Descriptions.Item label="Phone">{customer.phone || '-'}</Descriptions.Item>
@@ -75,7 +75,7 @@ const CustomerDetail = ({ customer, open, onClose, statusRender }: CustomerDetai
               <Alert
                 type="error"
                 showIcon
-                message={error}
+                title={error}
                 action={
                   <Button size="small" onClick={loadActivities}>
                     Retry
@@ -85,10 +85,10 @@ const CustomerDetail = ({ customer, open, onClose, statusRender }: CustomerDetai
             ) : activities.length === 0 ? (
               <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No activity recorded yet." />
             ) : (
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" style={{ width: '100%' }}>
                 {activities.map(activity => (
                   <div key={activity.id}>
-                    <Space direction="vertical" size={2}>
+                    <Space orientation="vertical" size={2}>
                       <Typography.Text strong>{activity.summary}</Typography.Text>
                       <Typography.Text type="secondary">
                         {activity.actor} · {new Date(activity.timestamp).toLocaleString()}

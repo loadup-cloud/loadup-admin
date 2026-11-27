@@ -95,7 +95,7 @@ const RolePermissionsPage = () => {
         {Object.entries(grouped).map(([category, items]) => (
           <Col xs={24} lg={12} key={category}>
             <Typography.Title level={5}>{category}</Typography.Title>
-            <Space direction="vertical" style={{ width: '100%' }}>
+            <Space orientation="vertical" style={{ width: '100%' }}>
               {items.map(permission => (
                 <div
                   key={permission.id}

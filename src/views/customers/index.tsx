@@ -222,7 +222,7 @@ const CustomersPage = () => {
       title: 'Customer',
       dataIndex: 'name',
       render: (_value, record) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Typography.Text strong>{record.name}</Typography.Text>
           <Typography.Text type="secondary">{record.company}</Typography.Text>
         </Space>
@@ -232,7 +232,7 @@ const CustomersPage = () => {
       title: 'Contact',
       dataIndex: 'email',
       render: (_value, record) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Typography.Text>{record.email}</Typography.Text>
           <Typography.Text type="secondary">{record.phone}</Typography.Text>
         </Space>
@@ -241,7 +241,7 @@ const CustomersPage = () => {
     {
       title: 'Source / Owner',
       render: (_value, record) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Tag>{sourceOptions.find(option => option.value === record.source)?.label}</Tag>
           <Typography.Text type="secondary">{record.owner ?? 'Unassigned'}</Typography.Text>
         </Space>
@@ -307,7 +307,7 @@ const CustomersPage = () => {
   ]
 
   return (
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="large" style={{ width: '100%' }}>
       <Card>
         <Form
           form={filterForm}
@@ -369,12 +369,12 @@ const CustomersPage = () => {
           </Button>
         }
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           {error && (
             <Alert
               type="error"
               showIcon
-              message={error}
+              title={error}
               action={
                 <Button size="small" icon={<ReloadOutlined />} onClick={loadCustomers}>
                   Retry
@@ -387,7 +387,7 @@ const CustomersPage = () => {
             <Alert
               type="info"
               showIcon
-              message={
+              title={
                 <Space wrap style={{ width: '100%', justifyContent: 'space-between' }}>
                   <Typography.Text strong>{selectedRowKeys.length} customers selected</Typography.Text>
                   <Space wrap>

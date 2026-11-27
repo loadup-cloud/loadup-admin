@@ -91,7 +91,7 @@ const RegisterPage: React.FC = () => {
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         }}
       >
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <div style={{ textAlign: 'center' }}>
             <Title level={2}>Sign Up</Title>
             <Text type="secondary">Create a new account to get started</Text>

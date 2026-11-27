@@ -105,7 +105,7 @@ const RolesPage = () => {
       title: 'Role',
       dataIndex: 'name',
       render: (_value, record) => (
-        <Space direction="vertical" size={0}>
+        <Space orientation="vertical" size={0}>
           <Typography.Text strong>{record.name}</Typography.Text>
           <Typography.Text type="secondary">{record.description}</Typography.Text>
         </Space>
@@ -158,7 +158,7 @@ const RolesPage = () => {
   ]
 
   return (
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="large" style={{ width: '100%' }}>
       <Card>
         <Form
           form={filterForm}
@@ -202,12 +202,12 @@ const RolesPage = () => {
           </Button>
         }
       >
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
           {error && (
             <Alert
               type="error"
               showIcon
-              message={error}
+              title={error}
               action={
                 <Button size="small" icon={<ReloadOutlined />} onClick={loadRoles}>
                   Retry

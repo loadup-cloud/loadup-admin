@@ -93,7 +93,7 @@ const CustomerSourceBreakdown = ({
   const palette = [token.colorPrimary, token.colorSuccess, token.colorWarning, token.colorInfo, token.colorError]
 
   return (
-    <Space direction="vertical" size="middle" style={{ width: '100%', minHeight: 320, justifyContent: 'center' }}>
+    <Space orientation="vertical" size="middle" style={{ width: '100%', minHeight: 320, justifyContent: 'center' }}>
       {data.map((item, index) => {
         const percent = total > 0 ? Math.round((item.value / total) * 100) : 0
         const color = palette[index % palette.length]
@@ -184,12 +184,12 @@ const DashboardPage = () => {
   }
 
   return (
-    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+    <Space orientation="vertical" size="large" style={{ width: '100%' }}>
       {error && (
         <Alert
           type="error"
           showIcon
-          message={error}
+          title={error}
           action={
             <Button size="small" icon={<ReloadOutlined />} onClick={loadStats}>
               Retry
@@ -209,7 +209,7 @@ const DashboardPage = () => {
                   value={card.value}
                   prefix={card.prefix}
                   suffix={card.suffix}
-                  valueStyle={{ color: token.colorText }}
+                  styles={{ content: { color: token.colorText } }}
                 />
               </Space>
               <Typography.Text style={{ color: token.colorTextSecondary }}>{card.trend}</Typography.Text>
